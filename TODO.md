@@ -1,0 +1,16 @@
+# TODO
+- [x] ordered collection diff (Lists fail)
+    - [ ] provide more space efficient algorithm (detect similar sequences)
+- [ ] more types
+  - [x] java.sql
+  - [ ] etc
+- [ ] more tests
+  - [x] java.sql
+- [ ] prepare for publishing
+  - [ ] readme
+    - [x] intro with example
+    - [ ] api details
+  - [ ] sbt
+  - [ ] drone
+  - [ ] codecov
+  - [ ] sonatype
