@@ -1,16 +1,20 @@
 # TODO
-- [x] ordered collection diff (Lists fail)
-    - [ ] provide more space efficient algorithm (detect similar sequences)
+- [x] ordered collection diff
 - [ ] more types
   - [x] java.sql
   - [ ] etc
 - [ ] more tests
   - [x] java.sql
-- [ ] prepare for publishing
-  - [ ] readme
+- [x] prepare for publishing
+  - [x] readme
     - [x] intro with example
-    - [ ] api details
-  - [ ] sbt
-  - [ ] drone
-  - [ ] codecov
-  - [ ] sonatype
+  - [x] sbt
+  - [x] drone
+  - [x] codecov
+  - [x] sonatype
+- [ ] improve readme
+  - [ ] api details
+  - [ ] adapters
+  - [ ] macros
+- [ ] provide more space efficient algorithm/structure (detect similar sequences) for ordered collections patch
+  

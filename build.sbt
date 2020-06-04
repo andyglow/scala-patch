@@ -109,8 +109,9 @@ lazy val macros = (project in file("macros")).dependsOn(core).settings(
 
 lazy val examples = (project in file("examples")).dependsOn(core, macros).settings(
   commons,
-  name := "scala-patch-examples"
-)
+  name := "scala-patch-examples",
+  publish / skip := true,
+  publishArtifact := false)
 
 lazy val root = (project in file("."))
   .aggregate(core, macros, examples)

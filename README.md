@@ -2,6 +2,7 @@
 The library provides the AST for structured Patches over Scala standard types as well as type classes that know how to compute patches for different types.
 
 [![Build Status](https://cloud.drone.io/api/badges/andyglow/scala-patch/status.svg)](https://cloud.drone.io/andyglow/scala-patch)
+[![codecov](https://codecov.io/gh/andyglow/scala-patch/branch/master/graph/badge.svg)](https://codecov.io/gh/andyglow/scala-patch)
 
 Supported types:
 - basic types like `string`, `boolean`, `numeric`
