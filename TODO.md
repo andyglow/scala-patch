@@ -16,5 +16,6 @@
   - [ ] api details
   - [ ] adapters
   - [ ] macros
+  - [ ] provide Ammonite REPL based walkthrough 
 - [ ] provide more space efficient algorithm/structure (detect similar sequences) for ordered collections patch
   
