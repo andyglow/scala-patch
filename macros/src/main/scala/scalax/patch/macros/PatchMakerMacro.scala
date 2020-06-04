@@ -16,6 +16,7 @@ class PatchMakerMacro(val c: blackbox.Context) extends Logic {
     val patchTermName      = patchTpe.typeSymbol.name.toTermName
     val patchMakerTpe      = appliedType(patchMaker, tpe)
     val patchMakerTermName = patchMakerTpe.typeSymbol.name.toTermName
+    val patchVisitorTypeName = patchVisitor.typeSymbol.name.toTypeName
 
     val tree = tpe match {
 
@@ -73,10 +74,10 @@ class PatchMakerMacro(val c: blackbox.Context) extends Logic {
 
         q"""
           case class $pcn(..$params) extends ${patchTermName.toTypeName}[$tpe] {
-            def apply(x: ${cc.tpe}): ${cc.tpe} = $applyBody
-            def isOpaque: Boolean              = $isOpaqueBody
-            def inverted: $patchTpe            = $invertedBody
-            def render(x: PatchRenderer): Unit = $renderBody
+            def apply(x: ${cc.tpe}): ${cc.tpe}          = $applyBody
+            def isOpaque: Boolean                       = $isOpaqueBody
+            def inverted: $patchTpe                     = $invertedBody
+            def render(x: $patchVisitorTypeName): Unit  = $renderBody
           }
 
           $patchMakerTermName.mk[${cc.tpe}]($patchMakerTermName.Kind.Structure) { case (l, r) => $mkBody }
@@ -90,13 +91,7 @@ class PatchMakerMacro(val c: blackbox.Context) extends Logic {
         }"""
     }
 
-//
-////    if(c.settings.contains("print-patch-maker-code")) info(showCode(tree))
-//    info(showCode(expr.tree))
-//
-//    expr
-
-    info(showCode(tree))
+    if(c.settings.contains("print-patch-maker-code")) info(showCode(tree))
 
     c.Expr[PatchMaker[T]](tree)
   }
