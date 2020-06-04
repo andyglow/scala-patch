@@ -23,7 +23,7 @@ steps:
     CODECOV_TOKEN:
       from_secret: codecov_token
   commands:
-  - sbt +clean +coverage +test
+  - sbt clean coverage test
   - sbt coverageAggregate
   - wget -O .codecov https://codecov.io/bash
   - chmod +x .codecov

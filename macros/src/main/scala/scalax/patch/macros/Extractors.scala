@@ -22,7 +22,7 @@ private[macros] trait Extractors { this: HasLog with HasContext =>
     }
   }
 
-  final case class CaseClass(
+  protected case class CaseClass(
     name: TypeName,
     tpe: Type,
     fields: Seq[CaseClass.Field])

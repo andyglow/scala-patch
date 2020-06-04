@@ -1,6 +1,5 @@
 package scalax.patch.macros
 
-import scala.reflect.macros.blackbox
 
 private[macros] trait HasLog { this: HasContext =>
 

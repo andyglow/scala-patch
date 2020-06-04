@@ -2,7 +2,7 @@ package scalax.patch.adapter.collections
 
 import scalax.patch._
 
-import scala.collection.{Factory, LinearSeq}
+import scala.collection.Factory
 
 
 sealed trait UnorderedCollectionAdapter[F[_], T] {

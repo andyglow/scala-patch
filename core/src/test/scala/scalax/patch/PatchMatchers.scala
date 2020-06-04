@@ -1,11 +1,6 @@
 package scalax.patch
 
-import java.util
-
 import org.scalatest.matchers.{MatchResult, Matcher}
-import scalax.patch.PatchMaker.UnorderedPatchMaker
-
-import scala.collection.LinearSeq
 
 trait PatchMatchers {
 

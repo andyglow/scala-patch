@@ -3,11 +3,11 @@ package scalax.patch
 import java.time._
 
 import org.scalactic.source.Position
-import org.scalatest.exceptions.TestFailedException
-import org.scalatest.matchers.should.Matchers._
 import org.scalatest.funsuite.AnyFunSuite
-import PatchMatchers._
-import runtime.ScalaRunTime.stringOf
+import org.scalatest.matchers.should.Matchers._
+import scalax.patch.PatchMatchers._
+
+import scala.runtime.ScalaRunTime.stringOf
 
 class PatchSpec extends AnyFunSuite {
 

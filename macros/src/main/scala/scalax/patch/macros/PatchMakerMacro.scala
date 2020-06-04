@@ -2,7 +2,6 @@ package scalax.patch.macros
 
 import scalax.patch.PatchMaker
 
-import scala.collection.mutable
 import scala.reflect.macros.blackbox
 
 
