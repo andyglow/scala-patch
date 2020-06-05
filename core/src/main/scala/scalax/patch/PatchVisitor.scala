@@ -11,6 +11,9 @@ trait PatchVisitor {
 
   def updateValue(from: Any, to: Any): Unit
 
+  // for custom patch implementations eg. texts
+  def updateValue(update: Any): Unit
+
   def increaseValue(delta: Any): Unit
 
   def decreaseValue(delta: Any): Unit
@@ -75,6 +78,12 @@ object PatchVisitor {
       writeIndent()
       w.write("      : to   ")
       w.write(to.toString)
+      nl()
+    }
+
+    override def updateValue(update: Any): Unit = {
+      writeIndent()
+      w.write(s"update: $update")
       nl()
     }
 

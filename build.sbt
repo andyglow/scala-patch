@@ -107,6 +107,11 @@ lazy val macros = (project in file("macros")).dependsOn(core).settings(
   libraryDependencies ++= Seq(
     (scalaVersion apply ("org.scala-lang" % "scala-reflect" % _ % Compile)).value.withSources.withJavadoc))
 
+lazy val texts = (project in file("texts")).dependsOn(core).settings(
+  commons,
+  name := "scala-patch-texts",
+  libraryDependencies += "org.bitbucket.cowwoc" % "diff-match-patch" % "1.2")
+
 lazy val examples = (project in file("examples")).dependsOn(core, macros).settings(
   commons,
   name := "scala-patch-examples",

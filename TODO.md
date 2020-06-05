@@ -1,5 +1,13 @@
 # TODO
+- [ ] Diff. Although diff and patch are always comes together, semantic is a little different.
+      Whereas Patch is more like a sequence of events (or commands, if you'd like), 
+      Diff is a pair of values with detailed explanation on what exactly differs one from another.
 - [x] ordered collection diff
+- [ ] port `org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch` to Scala ???
+      - can win in space if `Equal(text)` would be replaced with `Skip(n)`
+- [ ] patch serialization
+  - [ ] binary (protobuf?)
+  - [ ] json
 - [ ] more types
   - [x] java.sql
   - [ ] etc
@@ -12,6 +20,7 @@
   - [x] drone
   - [x] codecov
   - [x] sonatype
+- [x] more sophisticated text diff/patch
 - [ ] improve readme
   - [ ] api details
   - [ ] adapters

@@ -31,6 +31,7 @@ object PatchMaker extends LowPriorityPatchMaker {
     final case object KeyedCollection extends Kind
     final case object Structure extends Kind
     final case object Wrapper extends Kind
+    final case object Text extends Kind
   }
 
   def apply[T: PatchMaker]: PatchMaker[T] = implicitly
