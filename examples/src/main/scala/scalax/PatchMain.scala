@@ -1,11 +1,16 @@
-package scalax;
+package scalax
 
 import java.time._
 
 import scalax.patch._
 import runtime.ScalaRunTime.stringOf
 
-object Main {
+trait PatchMain {
+
+  def doPatch[T: PatchMaker](l: T, r: T): Unit
+}
+
+object PatchMainRunner extends PatchMain with PatchMainPlus  {
 
   def doPatch[T: PatchMaker](l: T, r: T): Unit = {
     val patch = Patch.make(l, r)
@@ -66,11 +71,6 @@ object Main {
     doPatch(
       Map("a" -> Map("aa" -> "bb"), "b" -> Map("bb" -> "cc")),
       Map("c" -> Map("cc" -> "dd"), "a" -> Map("aa" -> "bbb", "aaa" -> "AAA"))
-    )
-
-    doPatch(
-      LazyList("1", "2"),
-      LazyList("12")
     )
 
     doPatch(

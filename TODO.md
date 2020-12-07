@@ -1,4 +1,11 @@
 # TODO
+- [ ] introduce GPL
+  - [ ] rename packages
+  - [ ] rename github repo
+  - [ ] update drone/codecov integration
+  - [ ] update readme
+  - [ ] create documentation site
+
 - [ ] Diff. Although diff and patch are always comes together, semantic is a little different.
       Whereas Patch is more like a sequence of events (or commands, if you'd like), 
       Diff is a pair of values with detailed explanation on what exactly differs one from another.

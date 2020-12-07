@@ -6,6 +6,8 @@ import ReleaseTransformations._
 // https://github.com/xerial/sbt-sonatype/issues/71
 publishTo in ThisBuild := sonatypePublishTo.value
 
+lazy val scalaV = settingKey[ScalaVer]("Current Scala Version")
+
 lazy val commons = Seq(
   organization := "com.github.andyglow",
 
@@ -15,32 +17,31 @@ lazy val commons = Seq(
 
   organizationName := "andyglow",
 
-  scalaVersion := "2.13.2",
+  scalaVersion := (ScalaVer.fromEnv getOrElse ScalaVer._213).full,
 
-  scalacOptions ++= {
-    val options = Seq(
-      "-encoding", "UTF-8",
-      "-feature",
-      "-unchecked",
-      "-deprecation",
-      "-Xfatal-warnings",
-      "-Xlint",
-      "-Yno-adapted-args",
-      "-Ywarn-dead-code",
-      "-Ywarn-numeric-widen",
-      "-Xfuture")
+  crossScalaVersions := ScalaVer.values.map(_.full),
 
-    // WORKAROUND https://github.com/scala/scala/pull/5402
+  scalaV := ScalaVer.fromString(scalaVersion.value) getOrElse ScalaVer._213,
+
+  scalacOptions := CompilerOptions(scalaV.value),
+
+  Compile / unmanagedSourceDirectories ++= {
+    val bd = baseDirectory.value
+    def extraDirs(suffix: String): Seq[File] = Seq(bd / "src" / "main" / s"scala$suffix")
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 12)) => options.map {
-        case "-Xlint"               => "-Xlint:-unused,_"
-        case "-Ywarn-unused-import" => "-Ywarn-unused:imports,-patvars,-privates,-locals,-params,-implicits"
-        case other                  => other
-      }
-      case Some((2, n)) if n >= 13  => options.filterNot { opt =>
-        opt == "-Yno-adapted-args" || opt == "-Xfuture"
-      } :+ "-Xsource:2.13"
-      case _             => options
+      case Some((2, y)) if y <= 12 => extraDirs("-2.12-")
+      case Some((2, y)) if y >= 13 => extraDirs("-2.13+")
+      case _                       => Nil
+    }
+  },
+
+  Test / unmanagedSourceDirectories ++= {
+    val bd = baseDirectory.value
+    def extraDirs(suffix: String): Seq[File] = Seq(bd / "src" / "test" / s"scala$suffix")
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, y)) if y <= 12 => extraDirs("-2.12-")
+      case Some((2, y)) if y >= 13 => extraDirs("-2.13+")
+      case _                       => Nil
     }
   },
 
@@ -94,14 +95,14 @@ lazy val commons = Seq(
 
 lazy val core = (project in file("core")).settings(
   commons,
-  name := "scala-patch-core",
+  name := "scala-gpl",
   scalacOptions ++= Seq(
     "-language:implicitConversions",
     "-language:higherKinds"))
 
 lazy val macros = (project in file("macros")).dependsOn(core).settings(
   commons,
-  name := "scala-patch-macros",
+  name := "scala-gpl-macros",
   scalacOptions ++= Seq(
     "-language:experimental.macros"),
   libraryDependencies ++= Seq(
@@ -109,7 +110,7 @@ lazy val macros = (project in file("macros")).dependsOn(core).settings(
 
 lazy val texts = (project in file("texts")).dependsOn(core).settings(
   commons,
-  name := "scala-patch-texts",
+  name := "scala-gpl-textpatch",
   libraryDependencies += "org.bitbucket.cowwoc" % "diff-match-patch" % "1.2")
 
 lazy val examples = (project in file("examples")).dependsOn(core, macros).settings(
@@ -125,4 +126,4 @@ lazy val root = (project in file("."))
     publish / skip := true,
     publishArtifact := false,
     aggregate in update := false,
-    name := "scala-patch")
+    name := "scala-gpl-root")

@@ -2,6 +2,7 @@ package scalax.patch
 
 import scalax.patch.adapter._
 import scalax.patch.adapter.collections._
+import scalax.ScalaVersionSpecificUtils._
 
 /** Represents a Patch function
   *
@@ -208,7 +209,7 @@ object Patch {
       }
     }
 
-    def inverted = UpdateIndexed[F, V](delta.view.mapValues(_.inverted).toMap, - sizeDelta)
+    def inverted = UpdateIndexed[F, V](mapValues[Int, Patch[V], Patch[V]](delta, _.inverted), - sizeDelta)
 
     def render(x: PatchVisitor): Unit = {
       if (sizeDelta != 0) x.resize(sizeDelta)
@@ -223,11 +224,11 @@ object Patch {
   case class UpdateKeyed[F[_, _], K, V](delta: Map[K, Patch[V]])(implicit adapt: KeyedCollectionAdapter[F, K, V]) extends Patch[F[K, V]] {
     import adapt._
 
-    def isOpaque = delta.isEmpty
+    def isOpaque: Boolean = delta.isEmpty
 
     def apply(x: F[K, V]): F[K, V] = x updatedWith delta
 
-    def inverted = UpdateKeyed[F, K, V](delta.view.mapValues(_.inverted).toMap)
+    def inverted: Patch[F[K, V]] = UpdateKeyed[F, K, V](mapValues[K, Patch[V], Patch[V]](delta, _.inverted))
 
     def render(x: PatchVisitor): Unit = delta foreach { case (k, v) =>
       x.intoKey(k)

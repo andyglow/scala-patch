@@ -1,5 +1,9 @@
-# Scala Patch
-The library provides the AST for structured Patches over Scala standard types as well as type classes that know how to compute patches for different types.
+# Scala GPL
+> GPL: Generic Programming Library
+
+The library aims to provide several concepts missed in vanilla scala:
+- (make) enhanced approach to create new instances of case classes
+- (patch) ability to compare, create patch, apply patch for standard scala types
 
 [![Build Status](https://cloud.drone.io/api/badges/andyglow/scala-patch/status.svg)](https://cloud.drone.io/andyglow/scala-patch)
 ![Maven Central](https://img.shields.io/maven-central/v/com.github.andyglow/scala-patch-core_2.13?color=%234c1&label=maven)

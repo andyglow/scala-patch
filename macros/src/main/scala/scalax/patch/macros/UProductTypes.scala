@@ -6,7 +6,7 @@ import scala.util.control.NonFatal
 //import scala.reflect.NameTransformer
 
 
-private[macros] trait Extractors { this: HasLog with HasContext =>
+private[macros] trait UProductTypes { this: ULogging with UContext with UParameters with UCommons =>
   import c.universe._
 
   val optionTpe: Type = weakTypeOf[Option[_]]
@@ -25,7 +25,59 @@ private[macros] trait Extractors { this: HasLog with HasContext =>
   protected case class CaseClass(
     name: TypeName,
     tpe: Type,
-    fields: Seq[CaseClass.Field])
+    fields: Seq[CaseClass.Field]) extends {
+
+    def newInstanceTree(pmap: ParameterMap, default: => Tree): Tree = {
+      // TODO: index out of bound
+      val unknown = pmap.parameters.collect {
+        case (Parameter.ByName(name), v) if !fields.exists(_.name.decodedName.toString == name) =>
+          (name, v.map(show(_)).mkString(", "))
+      }
+      if (unknown.nonEmpty) {
+        err(s"unknown parameter names;\n ${unknown.map { case (k, tpe) => s"$k: $tpe"}.mkString("\n ")}")
+      }
+
+      val paramTree = fields.zipWithIndex map { case (f, i) =>
+        def byName            = for {
+                                  trees <- pmap.findByName(f.name.decodedName.toString)
+                                  tree  <- trees.find(_.tree.tpe <:< f.tpe)
+                                } yield tree
+        def byIndex           = for {
+                                  trees <- pmap.findByIndex(i)
+                                  tree  <- trees.find(_.tree.tpe <:< f.tpe)
+                                } yield tree
+        def byOwnDefault      = f.default
+        def byImplicitDefault = if (default.nonEmpty) q"$default.value.${f.name}" else {
+          val sb = new StringBuilder(s"value for '${f.name}: ${show(f.tpe)}' is not found;")
+          pmap.findTrees(f.name.decodedName.toString, i) foreach {
+            case TreeWithSource.Direct(tree) => sb append s"\n\t- '${suffixName(tree)}: ${show(tree.tpe)}': type mismatch"
+            case TreeWithSource.FromCaseClass(tpe, tree) => sb append s"\n\t- '${show(tpe)}.${suffixName(tree)}: ${show(tree.tpe)}': type mismatch"
+          }
+          sb append s"\n\t- no default value is specified for '${show(tpe)}.${f.name}'"
+          sb append s"\n\t- no 'scalax.Default[${show(tpe)}]' is available in implicit scope"
+          err(sb.toString)
+        }
+        val value = ((byName orElse byIndex).map { valTree =>
+          val valTpe = c.typecheck(valTree.tree).tpe
+          if (!(valTpe <:< f.tpe)) {
+            val autoBoxing = c.inferImplicitView(valTree.tree, valTpe, f.tpe)
+            if (autoBoxing.isEmpty)
+              err(
+                s"""parameter '${f.name}'; type mismatch;
+                   | found   : ${show(valTpe)}
+                   | required: ${show(f.tpe)}
+                   |""".stripMargin)
+          }
+          valTree.tree
+        } orElse byOwnDefault) getOrElse byImplicitDefault
+
+        q"${f.name} = $value"
+      }
+
+      q"new ${name}(..${paramTree})"
+    }
+
+  }
 
   final object CaseClass {
 
@@ -139,6 +191,10 @@ private[macros] trait Extractors { this: HasLog with HasContext =>
           None
       } else
         None
+    }
+
+    def getOrErr(tpe: Type, msg: Type => String): CaseClass = unapply(tpe) getOrElse {
+      err(msg(tpe))
     }
   }
 }

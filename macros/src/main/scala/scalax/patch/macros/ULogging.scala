@@ -1,7 +1,7 @@
 package scalax.patch.macros
 
 
-private[macros] trait HasLog { this: HasContext =>
+private[macros] trait ULogging { this: UContext =>
 
   val debugEnabled = true
 

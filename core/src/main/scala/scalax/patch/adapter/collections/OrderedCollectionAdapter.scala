@@ -2,10 +2,10 @@ package scalax.patch.adapter.collections
 
 import scalax.patch._
 
-import scala.collection.{Factory, LinearSeq, mutable}
+import scala.collection._
 
 
-sealed trait OrderedCollectionAdapter[F[_], T] {
+trait OrderedCollectionAdapter[F[_], T] {
   import OrderedCollectionAdapter._
 
   def apply(coll: F[T], diff: Diff[T]): F[T]
@@ -19,7 +19,7 @@ sealed trait OrderedCollectionAdapter[F[_], T] {
   implicit def mkOrderedOps(coll: F[T]): OrderedOps = new OrderedOps(coll)
 }
 
-object OrderedCollectionAdapter {
+object OrderedCollectionAdapter extends ScalaVersionSpecificOrderedCollectionAdapter {
 
   case class Diff[T](events: List[Diff.Evt[T]]) {
     import Diff._
@@ -73,25 +73,5 @@ object OrderedCollectionAdapter {
         override def toString: String = s"Drop(${elements mkString ","})"
       }
     }
-  }
-
-  implicit def forLinearSeq[F[X] <: LinearSeq[X], T: PatchMaker](implicit cc: Factory[T, F[T]]): OrderedCollectionAdapter[F, T] = new OrderedCollectionAdapter[F, T] {
-    import Diff._
-    import Evt._
-
-    override def apply(coll: F[T], diff: Diff[T]): F[T] = {
-      var tail: LinearSeq[T] = coll
-      val res = mutable.ListBuffer[T]()
-      diff.events foreach {
-        case Skip(n)        => res ++= tail.take(n); tail = tail.drop(n)
-        case Insert(es)     => res ++= es
-        case Drop(es)       => tail = tail.drop(es.length)
-        case Upgrade(es)    => res ++= es.zip(tail.take(es.length)).map { case (patch, e) => patch(e) }; tail = tail.drop(es.length)
-      }
-
-      cc fromSpecific res
-    }
-
-    override def diff(left: F[T], right: F[T]): Diff[T] = Diff.compute(left, right)
   }
 }

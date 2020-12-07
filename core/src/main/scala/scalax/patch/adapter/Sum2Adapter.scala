@@ -1,5 +1,8 @@
 package scalax.patch.adapter
 
+import scalax.ScalaVersionSpecificUtils._
+
+
 sealed trait Sum2Adapter[F[_, _], L, R] {
 
   def wrapLeft(x: L): F[L, R]
@@ -21,9 +24,9 @@ object Sum2Adapter {
 
     override def wrapRight(x: R): Either[L, R] = Right(x)
 
-    override def unwrapLeft(x: Either[L, R]): L = x.swap.getOrElse(throw new IllegalStateException)
+    override def unwrapLeft(x: Either[L, R]): L = getOrElse(x.swap, throw new IllegalStateException)
 
-    override def unwrapRight(x: Either[L, R]): R = x.getOrElse(throw new IllegalStateException)
+    override def unwrapRight(x: Either[L, R]): R = getOrElse(x, throw new IllegalStateException)
 
     override def exract(l: Either[L, R], r: Either[L, R]): Option[Either[(L, L), (R, R)]] = (l, r) match {
       case (Left(l1), Left(l2))   => Some(Left((l1, l2)))

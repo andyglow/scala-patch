@@ -9,7 +9,7 @@ import scalax.patch.PatchMatchers._
 
 import scala.runtime.ScalaRunTime.stringOf
 
-class PatchSpec extends AnyFunSuite {
+trait PatchSpecs { this: AnyFunSuite =>
 
   def doPatch[T: PatchMaker: MutationFighter](l: T, r: T)(implicit pos: Position): Unit = {
     val pm = PatchMaker[T]
@@ -21,6 +21,9 @@ class PatchSpec extends AnyFunSuite {
       iPatch should applyTo(MutationFighter copy r, MutationFighter copy l)
     }
   }
+}
+
+class PatchSpec extends AnyFunSuite with PatchSpecs with ScalaVersionSpecificPatchSpecs {
 
   doPatch(
     9,
@@ -60,11 +63,6 @@ class PatchSpec extends AnyFunSuite {
   doPatch(
     Map("a" -> Map("aa" -> "bb"), "b" -> Map("bb" -> "cc")),
     Map("c" -> Map("cc" -> "dd"), "a" -> Map("aa" -> "bbb", "aaa" -> "AAA"))
-  )
-
-  doPatch(
-    LazyList("1", "2"),
-    LazyList("12")
   )
 
   doPatch(

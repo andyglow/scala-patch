@@ -5,16 +5,16 @@ import scalax.patch.PatchMaker
 import scala.reflect.macros.blackbox
 
 
-class PatchMakerMacro(val c: blackbox.Context) extends Logic {
+class PatchMakerMacro(val c: blackbox.Context) extends UCommons {
   import c.universe._
 
   def deriveImpl[T](implicit t: c.WeakTypeTag[T]): c.Expr[PatchMaker[T]] = {
     val tpe = t.tpe
 
-    val patchTpe           = appliedType(patch, tpe)
-    val patchTermName      = patchTpe.typeSymbol.name.toTermName
-    val patchMakerTpe      = appliedType(patchMaker, tpe)
-    val patchMakerTermName = patchMakerTpe.typeSymbol.name.toTermName
+    val patchTpe             = appliedType(patch, tpe)
+    val patchTermName        = patchTpe.typeSymbol.name.toTermName
+    val patchMakerTpe        = appliedType(patchMaker, tpe)
+    val patchMakerTermName   = patchMakerTpe.typeSymbol.name.toTermName
     val patchVisitorTypeName = patchVisitor.typeSymbol.name.toTypeName
 
     val tree = tpe match {
