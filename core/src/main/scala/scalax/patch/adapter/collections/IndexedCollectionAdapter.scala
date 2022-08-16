@@ -6,6 +6,8 @@ import scalax.patch._
 
 trait IndexedCollectionAdapter[F[_], V] { self =>
 
+  def elementPatchMaker: PatchMaker[V]
+
   def applyPatch(coll: F[V], index: Int, patch: Patch[V]): F[V]
 
   def resize(coll: F[V], sizeDelta: Int): F[V]
@@ -62,5 +64,7 @@ object IndexedCollectionAdapter extends ScalaVersionSpecificIndexedCollectionAda
     }
 
     override def resize(coll: Array[T], sizeDelta: Int): Array[T] = copyArray(coll, sizeDelta)
+
+    override def elementPatchMaker: PatchMaker[T] = compT
   }
 }

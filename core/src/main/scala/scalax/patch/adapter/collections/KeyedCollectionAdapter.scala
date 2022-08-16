@@ -5,6 +5,8 @@ import scalax.patch._
 
 trait KeyedCollectionAdapter[F[_, _], K, V] {
 
+  def valuePatchMaker: PatchMaker[V]
+
   def applyPatch(coll: F[K, V], key: K, patch: Patch[V]): F[K, V]
 
   def diff(left: F[K, V], right: F[K, V]): Map[K, Patch[V]]

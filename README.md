@@ -6,7 +6,7 @@ The library aims to provide several concepts missed in vanilla scala:
 - (patch) ability to compare, create patch, apply patch for standard scala types
 
 [![Build Status](https://cloud.drone.io/api/badges/andyglow/scala-patch/status.svg)](https://cloud.drone.io/andyglow/scala-patch)
-![Maven Central](https://img.shields.io/maven-central/v/com.github.andyglow/scala-patch-core_2.13?color=%234c1&label=maven)
+![Maven Central](https://img.shields.io/maven-central/v/com.github.andyglow/scala-gpl_2.13?color=%234c1&label=maven)
 ![Codecov](https://img.shields.io/codecov/c/gh/andyglow/scala-patch)
 
 Supported types:
@@ -136,7 +136,7 @@ which under some circumstances may look non optimal.
 
 For more sophisticated string manipulation you can use `texts` module`
 ```scala
-libraryDependencies += "com.andyglow.github" %% "scala-patch-texts" % $version
+libraryDependencies += "com.github.andyglow" %% "scala-patch-texts" % $version
 ```
 
 It is based on google's `patch-match-diff` library and give more detailed patches over strings.

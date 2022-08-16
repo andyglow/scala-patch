@@ -49,9 +49,9 @@ trait Patch[T] { self =>
   /** Reports some internal representation details so developer can have access to Patch function specific details.
     * Can be used for rendering to text.
     *
-    * @param x Renderer
+    * @param x Patch Visitor
     */
-  def render(x: PatchVisitor): Unit
+  def visit(x: PatchVisitor): Unit
 }
 
 object Patch {
@@ -66,7 +66,7 @@ object Patch {
 
     override def inverted: Patch[TT] = underlying.inverted.imap(fw, bk)
 
-    def render(x: PatchVisitor): Unit = underlying.render(x)
+    def visit(x: PatchVisitor): Unit = underlying.visit(x)
   }
 
   private val _empty: Patch[Any] = new Patch[Any] {
@@ -77,7 +77,9 @@ object Patch {
 
     override def inverted: Patch[Any] = this
 
-    def render(x: PatchVisitor): Unit = ()
+    def visit(x: PatchVisitor): Unit = ()
+
+    override def toString: String = "Empty"
   }
 
   def Empty[T]: Patch[T] = _empty.asInstanceOf[Patch[T]]
@@ -90,7 +92,7 @@ object Patch {
 
     def inverted: Patch[T] = Group(steps map { _.inverted })
 
-    def render(x: PatchVisitor): Unit = steps foreach { _.render(x) }
+    def visit(x: PatchVisitor): Unit = steps foreach { _.visit(x) }
   }
   object Group {
 
@@ -105,7 +107,7 @@ object Patch {
 
     def inverted = UpdateValue(to, from)
 
-    def render(x: PatchVisitor): Unit = x.updateValue(from, to)
+    def visit(x: PatchVisitor): Unit = x.updateValue(from, to)
   }
 
   case class SetValue[T](to: T) extends Patch[T] {
@@ -116,7 +118,7 @@ object Patch {
 
     def inverted = UnsetValue(to)
 
-    def render(x: PatchVisitor): Unit = x.setValue(to)
+    def visit(x: PatchVisitor): Unit = x.setValue(to)
   }
 
   case class UnsetValue[T](from: T) extends Patch[T] {
@@ -127,7 +129,7 @@ object Patch {
 
     def inverted = SetValue(from)
 
-    def render(x: PatchVisitor): Unit = x.unsetValue(from)
+    def visit(x: PatchVisitor): Unit = x.unsetValue(from)
   }
 
   case class IncreaseValue[T, D](delta: D)(implicit lin: ArithmeticAdapter.Aux[T, D]) extends Patch[T] {
@@ -139,7 +141,7 @@ object Patch {
 
     def inverted = DecreaseValue(delta)
 
-    def render(x: PatchVisitor): Unit = x.increaseValue(delta)
+    def visit(x: PatchVisitor): Unit = x.increaseValue(delta)
   }
 
   case class DecreaseValue[T, D](delta: D)(implicit lin: ArithmeticAdapter.Aux[T, D]) extends Patch[T] {
@@ -151,7 +153,7 @@ object Patch {
 
     def inverted = IncreaseValue(delta)
 
-    def render(x: PatchVisitor): Unit = x.decreaseValue(delta)
+    def visit(x: PatchVisitor): Unit = x.decreaseValue(delta)
   }
 
   case class UpdateUnordered[F[_], T](delta: UnorderedCollectionAdapter.Diff[T])(implicit adapt: UnorderedCollectionAdapter[F, T]) extends Patch[F[T]] {
@@ -166,7 +168,7 @@ object Patch {
 
     def inverted = UpdateUnordered(delta.inverted)
 
-    def render(x: PatchVisitor): Unit = delta.events foreach {
+    def visit(x: PatchVisitor): Unit = delta.events foreach {
       case Add(es)    => x.addItems(es)
       case Remove(es) => x.removeItems(es)
     }
@@ -184,7 +186,7 @@ object Patch {
 
     def inverted = UpdateOrdered(delta.inverted)
 
-    def render(x: PatchVisitor): Unit = delta.events foreach {
+    def visit(x: PatchVisitor): Unit = delta.events foreach {
       case Skip(n)      => x.skipItems(n)
       case Insert(es)   => x.insertItems(es)
       case Drop(es)     => x.dropItems(es)
@@ -211,11 +213,11 @@ object Patch {
 
     def inverted = UpdateIndexed[F, V](mapValues[Int, Patch[V], Patch[V]](delta, _.inverted), - sizeDelta)
 
-    def render(x: PatchVisitor): Unit = {
+    def visit(x: PatchVisitor): Unit = {
       if (sizeDelta != 0) x.resize(sizeDelta)
       delta.keys.toList.sorted foreach { i =>
         x.intoIndex(i)
-        delta(i).render(x)
+        delta(i).visit(x)
         x.outofIndex(i)
       }
     }
@@ -230,9 +232,9 @@ object Patch {
 
     def inverted: Patch[F[K, V]] = UpdateKeyed[F, K, V](mapValues[K, Patch[V], Patch[V]](delta, _.inverted))
 
-    def render(x: PatchVisitor): Unit = delta foreach { case (k, v) =>
+    def visit(x: PatchVisitor): Unit = delta foreach { case (k, v) =>
       x.intoKey(k)
-      v.render(x)
+      v.visit(x)
       x.outofKey(k)
     }
   }

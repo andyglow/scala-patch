@@ -1,10 +1,12 @@
 # TODO
 - [ ] introduce GPL
-  - [ ] rename packages
+  - [ ] rename packages. `scalax.generic` ???
   - [ ] rename github repo
   - [ ] update drone/codecov integration
   - [ ] update readme
   - [ ] create documentation site
+
+- [ ] can we merge it with scala-tuples?
 
 - [ ] Diff. Although diff and patch are always comes together, semantic is a little different.
       Whereas Patch is more like a sequence of events (or commands, if you'd like), 

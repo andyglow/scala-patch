@@ -52,5 +52,7 @@ trait ScalaVersionSpecificIndexedCollectionAdapter {
       } else
         coll
     }
+
+    override def elementPatchMaker: PatchMaker[T] = compT
   }
 }

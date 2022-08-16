@@ -3,6 +3,7 @@ package scalax
 import java.time._
 
 import scalax.patch._
+import scalax.generic.auto._
 import runtime.ScalaRunTime.stringOf
 
 trait PatchMain {
@@ -12,9 +13,10 @@ trait PatchMain {
 
 object PatchMainRunner extends PatchMain with PatchMainPlus  {
 
-  def doPatch[T: PatchMaker](l: T, r: T): Unit = {
+  def doPatch[T](l: T, r: T)(implicit pm: PatchMaker[T]): Unit = {
+
     val patch = Patch.make(l, r)
-    println(s"- { ----\n  (left : ${stringOf(l)}) diff\n  (right: ${stringOf(r)}) =>\n  (patch: {\n${PatchVisitor stringify patch}  })")
+    println(s"- { ----\n  pm: $pm\n  (left : ${stringOf(l)}) diff\n  (right: ${stringOf(r)}) =>\n  (patch: {\n${PatchVisitor stringify patch}  })")
 
     val patchedL = patch(l)
     val unpatchedR = patch.inverted(r)
@@ -32,6 +34,11 @@ object PatchMainRunner extends PatchMain with PatchMainPlus  {
   }
 
   def main(args: Array[String]): Unit = {
+
+    doPatch(
+      3,
+      3
+    )
 
     doPatch(
       9,
@@ -94,8 +101,8 @@ object PatchMainRunner extends PatchMain with PatchMainPlus  {
     )
 
     doPatch(
-      CC("shelly", 23, Map("prop1" -> "v1", "prop2" -> "v2")),
-      CC("cristine", 37, Map("prop1" -> "vv1", "prop2" -> "vv2"))
+      CC("shelly", 23, Map("prop1" -> "v1", "prop2" -> "v2"), Array(), true),
+      CC("cristine", 37, Map("prop1" -> "vv1", "prop2" -> "vv2"), Array(), true)
     )
 
     doPatch[Option[Int]](
@@ -123,13 +130,22 @@ object PatchMainRunner extends PatchMain with PatchMainPlus  {
       Right(234)
     )
 
+
+    doPatch(
+      Array(CC("name", 23, Map("prop1" -> "v1", "prop2" -> "v2"), Array("foo"), true)),
+      Array(CC("name", 24, Map("prop1" -> "v1", "prop2" -> "vv2"), Array("bar"), true))
+    )
+
   }
 
 
   case class CC(
     name: String,
     age: Int,
-    props: Map[String, String])
+    props: Map[String, String],
+    logs: Array[String],
+    active: Boolean
+  )
 
   object CC {
 
@@ -177,6 +193,8 @@ object PatchMainRunner extends PatchMain with PatchMainPlus  {
 //      }
 //    })
 
-    implicit val ccpm: PatchMaker[CC] = DerivePatchMaker.derive[CC]
+
+//    import scalax.generic.semiauto._
+//    implicit val ccpm: PatchMaker[CC] = derivePatchMaker[CC]
   }
 }

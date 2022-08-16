@@ -163,7 +163,7 @@ object PatchVisitor {
       xs foreach { patch =>
         writeIndent()
         w.write("- ")
-        patch.render(this)
+        patch.visit(this)
       }
     }
 
@@ -216,7 +216,7 @@ object PatchVisitor {
     }
   }
 
-  def render[T](w: Writer, patch: Patch[T]): Unit = patch.render(Renderer(w))
+  def render[T](w: Writer, patch: Patch[T]): Unit = patch.visit(Renderer(w))
 
   def stringify[T](patch: Patch[T]): String = {
     val w = new StringWriter

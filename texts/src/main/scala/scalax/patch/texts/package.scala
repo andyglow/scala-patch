@@ -6,8 +6,12 @@ package object texts {
 
   private[texts] val dmp = new DiffMatchPatch
 
-  implicit val stringTextsPM: PatchMaker[String] =
-    PatchMaker.mk(PatchMaker.Kind.Text) { case (l, r) =>
-      TextPatch.make(l, r)
-    }
+  object TextPatchMaker extends PatchMaker[String] {
+    override def make(l: String, r: String): Patch[String] = TextPatch.make(l, r)
+
+    override def kind: PatchMaker.Kind = PatchMaker.Kind.Text
+  }
+
+
+  implicit val stringTextsPM: PatchMaker[String] = TextPatchMaker
 }

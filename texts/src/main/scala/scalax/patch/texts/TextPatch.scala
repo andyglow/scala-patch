@@ -4,7 +4,7 @@ import java.{ util => ju }
 
 import scalax.patch._
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch.{Patch => JPatch, Diff => JDiff, Operation => JOper}
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConverters._
 
 
 case class TextPatch(steps: List[TextPatch.Step]) extends Patch[String] {
@@ -26,7 +26,7 @@ case class TextPatch(steps: List[TextPatch.Step]) extends Patch[String] {
 
   override def inverted: Patch[String] = TextPatch(steps = steps map { _.inverted })
 
-  override def render(x: PatchVisitor): Unit = x.updateValue(this)
+  override def visit(x: PatchVisitor): Unit = x.updateValue(this)
 
   override def toString: String = steps mkString "; "
 }

@@ -108,19 +108,28 @@ lazy val macros = (project in file("macros")).dependsOn(core).settings(
   libraryDependencies ++= Seq(
     (scalaVersion apply ("org.scala-lang" % "scala-reflect" % _ % Compile)).value.withSources.withJavadoc))
 
+lazy val generic = (project in file("generic")).dependsOn(core, macros).settings(
+  commons,
+  name := "scala-gpl-generic")
+
 lazy val texts = (project in file("texts")).dependsOn(core).settings(
   commons,
   name := "scala-gpl-textpatch",
   libraryDependencies += "org.bitbucket.cowwoc" % "diff-match-patch" % "1.2")
 
-lazy val examples = (project in file("examples")).dependsOn(core, macros).settings(
+lazy val structuredMatchers = (project in file("structured-matchers")).dependsOn(core, generic).settings(
+  commons,
+  name := "scalatest-structured-matchers",
+  libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12")
+
+lazy val examples = (project in file("examples")).dependsOn(core, generic).settings(
   commons,
   name := "scala-patch-examples",
   publish / skip := true,
   publishArtifact := false)
 
 lazy val root = (project in file("."))
-  .aggregate(core, macros, examples)
+  .aggregate(core, macros, generic, texts, structuredMatchers, examples)
   .settings(
     commons,
     publish / skip := true,

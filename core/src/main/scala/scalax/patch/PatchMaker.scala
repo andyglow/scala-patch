@@ -29,7 +29,7 @@ object PatchMaker extends LowPriorityPatchMaker {
     final case object UnorderedCollection extends Kind
     final case object IndexedCollection extends Kind
     final case object KeyedCollection extends Kind
-    final case object Structure extends Kind
+    final case class Structure(id: String) extends Kind
     final case object Wrapper extends Kind
     final case object Text extends Kind
   }
@@ -40,22 +40,18 @@ object PatchMaker extends LowPriorityPatchMaker {
     override def kind: Kind = k
     override def make(l: T, r: T): Patch[T] = mk(l, r)
   }
-
-  def mk[T](k: Kind)(mk: (T, T) => Patch[T]): PatchMaker[T] = new PatchMaker[T] {
-    override def kind: Kind = k
-    override def make(l: T, r: T): Patch[T] = mk(l, r)
-  }
-
   import Kind._
 
   private[patch] case class ConstantPatchMaker[T]() extends AbstractPatchMaker[T](Constant, {
     case (null, r)    => SetValue(r)
     case (l   , null) => UnsetValue(l)
+    case (l   , r) if l == r   => Empty
     case (l   , r)    => UpdateValue(l, r)
   })
 
   private[patch] case class ArithmeticPatchMaker[T, D]()(implicit num: ArithmeticAdapter.Aux[T, D]) extends AbstractPatchMaker[T](Mono, {
-    case (l, r) if (l.getClass == r.getClass ) =>
+    case (l, r) if l == r => Empty
+    case (l, r) if (l.getClass == r.getClass) =>
       import num._
       IncreaseValue(r - l)
 
@@ -65,24 +61,32 @@ object PatchMaker extends LowPriorityPatchMaker {
 
   implicit def arithmeticPM[T, D](implicit num: ArithmeticAdapter.Aux[T, D]): PatchMaker[T] = ArithmeticPatchMaker[T, D]()
 
-  private[patch] case class Sum1PatchMaker[F[_], T: PatchMaker]()(implicit sum1: Sum1Adapter[F, T]) extends AbstractPatchMaker[F[T]](Wrapper, {
+  private[patch] case class Sum1PatchMaker[F[_], T]()(implicit sum1: Sum1Adapter[F, T], pm: PatchMaker[T]) extends AbstractPatchMaker[F[T]](Wrapper, {
+    case (l, r) if l == r => Empty
     case (l, r) =>
-      sum1.exract(l, r) match {
+      sum1.extract(l, r) match {
         case None         => UpdateValue(l, r)
         case Some((l, r)) => Patch.make(l, r).imap(sum1.wrap, sum1.unwrap)
       }
-  })
+  }) {
+
+    override def toString: String = s"SumPatchMaker(underlying=$pm)"
+  }
 
   implicit def sum1PM[F[_], T: PatchMaker](implicit sum1: Sum1Adapter[F, T]): PatchMaker[F[T]] = Sum1PatchMaker[F, T]()
 
-  private[patch] case class Sum2PatchMaker[F[_, _], L: PatchMaker, R: PatchMaker]()(implicit sum2: Sum2Adapter[F, L, R]) extends AbstractPatchMaker[F[L, R]](Wrapper, {
+  private[patch] case class Sum2PatchMaker[F[_, _], L, R]()(implicit sum2: Sum2Adapter[F, L, R], pmL: PatchMaker[L], pmR: PatchMaker[R]) extends AbstractPatchMaker[F[L, R]](Wrapper, {
+    case (l, r) if l == r => Empty
     case (l, r) =>
       sum2.exract(l, r) match {
         case None                  => UpdateValue(l, r)
         case Some(Left((l0, l1)))  => Patch.make(l0, l1).imap(sum2.wrapLeft, sum2.unwrapLeft)
         case Some(Right((r0, r1))) => Patch.make(r0, r1).imap(sum2.wrapRight, sum2.unwrapRight)
       }
-  })
+  }) {
+
+    override def toString: String = s"SumPatchMaker(underlying0=$pmL, underlying1=$pmR)"
+  }
 
   implicit def sum2PM[F[_, _], L: PatchMaker, R: PatchMaker](implicit sum2: Sum2Adapter[F, L, R]): PatchMaker[F[L, R]] = Sum2PatchMaker[F, L, R]()
 
@@ -90,14 +94,16 @@ object PatchMaker extends LowPriorityPatchMaker {
     case (l, r) =>
       import coll._
 
-      UpdateUnordered(diff(l, r))
+      val theDiff = diff(l, r)
+      if (theDiff.events.isEmpty) Empty else UpdateUnordered(theDiff)
   })
 
   private[patch] case class OrderedPatchMaker[F[_], T]()(implicit coll: OrderedCollectionAdapter[F, T]) extends AbstractPatchMaker[F[T]](OrderedCollection, {
     case (l, r) =>
       import coll._
 
-      UpdateOrdered(diff(l, r))
+      val theDiff = diff(l, r)
+      if (theDiff.events.isEmpty) Empty else UpdateOrdered(theDiff)
   })
 
   implicit def orderedPM[F[_], V](implicit coll: OrderedCollectionAdapter[F, V]): PatchMaker[F[V]] = OrderedPatchMaker[F, V]()
@@ -113,7 +119,10 @@ object PatchMaker extends LowPriorityPatchMaker {
       } else {
         UpdateIndexed(delta, sizeDelta)
       }
-  })
+  }) {
+
+    override def toString: String = s"IndexedPatchMaker(element=${coll.elementPatchMaker})"
+  }
 
   implicit def indexedPM[F[_], V](implicit coll: IndexedCollectionAdapter[F, V]): PatchMaker[F[V]] = IndexedPatchMaker[F, V]()
 
@@ -128,7 +137,10 @@ object PatchMaker extends LowPriorityPatchMaker {
       } else {
         UpdateKeyed(delta)
       }
-  })
+  }) {
+
+    override def toString: String = s"KeyedPatchMaker(value=${coll.valuePatchMaker})"
+  }
 
   implicit def keyedPM[F[_, _], K, V](implicit coll: KeyedCollectionAdapter[F, K, V]): PatchMaker[F[K, V]] = KeyedPatchMaker[F, K, V]()
 }

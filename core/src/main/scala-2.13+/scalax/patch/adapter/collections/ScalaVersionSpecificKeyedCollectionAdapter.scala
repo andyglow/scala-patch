@@ -28,5 +28,7 @@ trait ScalaVersionSpecificKeyedCollectionAdapter {
 
       updated
     }
+
+    override def valuePatchMaker: PatchMaker[V] = compV
   }
 }

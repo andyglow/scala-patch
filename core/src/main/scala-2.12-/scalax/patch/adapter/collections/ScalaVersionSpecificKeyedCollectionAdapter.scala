@@ -18,7 +18,7 @@ trait ScalaVersionSpecificKeyedCollectionAdapter {
       val builder = cc()
       effective foreach { builder += _ }
       val res = builder.result
-      println("Map.patch(" + coll + ", " + patch + ") -> " + res + "/" + effective + "; // " + cc)
+      // println("Map.patch(" + coll + ", " + patch + ") -> " + res + "/" + effective + "; // " + cc)
       res
     }
 
@@ -36,5 +36,7 @@ trait ScalaVersionSpecificKeyedCollectionAdapter {
 
       updated
     }
+
+    override def valuePatchMaker: PatchMaker[V] = compV
   }
 }
