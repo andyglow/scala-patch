@@ -39,6 +39,6 @@ class BranchSpec extends AnyFunSuite {
     b.append(5)
     b.append(new StringBuilder("zzz"))
 
-    b.toString shouldBe "root.foo[5].zzz"
+    b.copy().toString shouldBe "root.foo[5].zzz"
   }
 }
