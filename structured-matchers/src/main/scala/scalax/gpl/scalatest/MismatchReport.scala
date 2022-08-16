@@ -2,7 +2,6 @@ package scalax.gpl.scalatest
 
 import scalax.patch.{Patch, PatchMaker, PatchVisitor}
 
-import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 
 case class MismatchReport(
@@ -14,10 +13,9 @@ case class MismatchReport(
 
 object MismatchReport {
 
-  def compute[T: PatchMaker](left: T, right: T): MismatchReport = {
+  def compute[T](patch: Patch[T]): MismatchReport = {
     import BranchElement._
 
-    val patch = Patch.make(left, right)
     val branch = new MutableBranch()
     branch.append(BranchElement.Root)
     def push(x: BranchElement): Unit = branch.append(x)

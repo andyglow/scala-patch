@@ -197,7 +197,7 @@ object Patch {
   case class UpdateIndexed[F[_], V](delta: Map[Int, Patch[V]], sizeDelta: Int)(implicit adapt: IndexedCollectionAdapter[F, V]) extends Patch[F[V]] {
     import adapt._
 
-    def isOpaque = delta.isEmpty
+    def isOpaque = delta.isEmpty || delta.values.forall(_.isOpaque)
 
     def apply(x: F[V]): F[V] = {
       if (sizeDelta > 0) {
@@ -226,7 +226,7 @@ object Patch {
   case class UpdateKeyed[F[_, _], K, V](delta: Map[K, Patch[V]])(implicit adapt: KeyedCollectionAdapter[F, K, V]) extends Patch[F[K, V]] {
     import adapt._
 
-    def isOpaque: Boolean = delta.isEmpty
+    def isOpaque: Boolean = delta.isEmpty || delta.values.forall(_.isOpaque)
 
     def apply(x: F[K, V]): F[K, V] = x updatedWith delta
 
