@@ -12,6 +12,5 @@ package object texts {
     override def kind: PatchMaker.Kind = PatchMaker.Kind.Text
   }
 
-
   implicit val stringTextsPM: PatchMaker[String] = TextPatchMaker
 }

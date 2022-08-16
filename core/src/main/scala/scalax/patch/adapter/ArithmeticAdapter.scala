@@ -1,6 +1,6 @@
 package scalax.patch.adapter
 
-import java.{ util => ju, time => jt, sql => jsql }
+import java.{util => ju, time => jt, sql => jsql}
 
 sealed trait ArithmeticAdapter[T] {
   type Delta
@@ -10,9 +10,9 @@ sealed trait ArithmeticAdapter[T] {
   def increase(base: T, delta: Delta): T
 
   class ArithmeticOps(lhs: T) {
-    def -(rhs: T): Delta     = diff(lhs, rhs)
-    def :-(delta: Delta): T  = reduce(lhs, delta)
-    def :+(delta: Delta): T  = increase(lhs, delta)
+    def -(rhs: T): Delta    = diff(lhs, rhs)
+    def :-(delta: Delta): T = reduce(lhs, delta)
+    def :+(delta: Delta): T = increase(lhs, delta)
   }
 
   implicit def mkLinearOps(lhs: T): ArithmeticOps = new ArithmeticOps(lhs)
@@ -20,7 +20,7 @@ sealed trait ArithmeticAdapter[T] {
 
 object ArithmeticAdapter {
 
-  type Aux[T, D] = ArithmeticAdapter[T] { type Delta = D}
+  type Aux[T, D] = ArithmeticAdapter[T] { type Delta = D }
 
   implicit def forNumeric[T](implicit num: Numeric[T]): Aux[T, T] = new ArithmeticAdapter[T] {
     type Delta = T

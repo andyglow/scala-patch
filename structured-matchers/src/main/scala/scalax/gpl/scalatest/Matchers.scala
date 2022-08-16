@@ -11,10 +11,12 @@ trait Matchers {
     override def apply(left: T): MatchResult = {
       val patch = Patch.make(left, right)
 
-      val message = if (patch.isOpaque) "" else {
-        val report = MismatchReport.compute(patch)
-        report.mismatches.map { case (branch, msg) => s"- $branch: $msg" }.mkString("\n")
-      }
+      val message =
+        if (patch.isOpaque) ""
+        else {
+          val report = MismatchReport.compute(patch)
+          report.mismatches.map { case (branch, msg) => s"- $branch: $msg" }.mkString("\n")
+        }
       MatchResult(
         patch.isOpaque,
         s"mismatches found:\n${message}",

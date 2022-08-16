@@ -13,7 +13,7 @@ object ScalaVersionSpecificUtils {
 
     sizeDelta match {
       // same
-      case 0 =>
+      case 0                  =>
         val target = Array.ofDim[T](source.length)
         Array.copy(source, 0, target, 0, source.length)
         target

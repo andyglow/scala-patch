@@ -15,9 +15,13 @@ private[macros] trait UParameters { this: ULogging with UContext with UProductTy
           // when "name"
           case Literal(Constant(x: String)) => ByName(x)
           // when 'name
-          case Apply(Select(Select(Ident(TermName("scala")), TermName("Symbol")), TermName("apply")), List(Literal(Constant(x: String)))) => ByName(x)
+          case Apply(
+                Select(Select(Ident(TermName("scala")), TermName("Symbol")), TermName("apply")),
+                List(Literal(Constant(x: String)))
+              ) =>
+            ByName(x)
           // otherwise
-          case _ => err(s"can't take parameter name from: ${show(x)}")
+          case _                            => err(s"can't take parameter name from: ${show(x)}")
         }
       }
     }
@@ -25,9 +29,9 @@ private[macros] trait UParameters { this: ULogging with UContext with UProductTy
     case class ByIndex(value: Int) extends Parameter
   }
 
-  sealed trait TreeWithSource { def tree: Tree }
-  object TreeWithSource {
-    case class Direct(tree: Tree) extends TreeWithSource
+  sealed trait TreeWithSource                                                { def tree: Tree }
+  object TreeWithSource                                                      {
+    case class Direct(tree: Tree)                   extends TreeWithSource
     case class FromCaseClass(tpe: Type, tree: Tree) extends TreeWithSource
   }
   class ParameterMap(val parameters: Seq[(Parameter, List[TreeWithSource])]) {
@@ -38,12 +42,12 @@ private[macros] trait UParameters { this: ULogging with UContext with UProductTy
 
     def findByName(x: String): Option[List[TreeWithSource]] = find {
       case Parameter.ByName(`x`) => true
-      case _ => false
+      case _                     => false
     }
 
     def findByIndex(x: Int): Option[List[TreeWithSource]] = find {
       case Parameter.ByIndex(`x`) => true
-      case _ => false
+      case _                      => false
     }
 
     def findTrees(name: String, idx: Int): Seq[TreeWithSource] = {
@@ -55,7 +59,7 @@ private[macros] trait UParameters { this: ULogging with UContext with UProductTy
 
     def append(thatP: Parameter, thatT: List[TreeWithSource]): ParameterMap = {
       var existing = false
-      val entries = parameters map { case (thisP, thisT) =>
+      val entries  = parameters map { case (thisP, thisT) =>
         if (thisP == thatP) {
           existing = true
           (thisP, thisT ++ thatT)
@@ -79,7 +83,9 @@ private[macros] trait UParameters { this: ULogging with UContext with UProductTy
 
     def fromCaseClassDefinition(tree: Tree, cc: CaseClass): ParameterMap = {
       val params = cc.fields.map { f =>
-        Parameter.ByName(f.name.decodedName.toString) -> List(TreeWithSource.FromCaseClass(cc.tpe, c.typecheck(q"$tree.${f.name}")))
+        Parameter.ByName(f.name.decodedName.toString) -> List(
+          TreeWithSource.FromCaseClass(cc.tpe, c.typecheck(q"$tree.${f.name}"))
+        )
       }
 
       new ParameterMap(params)
@@ -88,11 +94,59 @@ private[macros] trait UParameters { this: ULogging with UContext with UProductTy
     def fromCall(xs: Tree*): ParameterMap = {
       val params = xs.zipWithIndex map {
         // case "key" -> "val" // scala 2.12
-        case (Apply(TypeApply(Select(Apply(TypeApply(Select(Select(Ident(TermName("scala")), TermName("Predef")), TermName("ArrowAssoc")), List(TypeTree())), List(k)), TermName("$minus$greater")), List(TypeTree())), List(v)), _) => (Parameter.ByName fromTree k, List(TreeWithSource.Direct(v)))
+        case (
+              Apply(
+                TypeApply(
+                  Select(
+                    Apply(
+                      TypeApply(
+                        Select(Select(Ident(TermName("scala")), TermName("Predef")), TermName("ArrowAssoc")),
+                        List(TypeTree())
+                      ),
+                      List(k)
+                    ),
+                    TermName("$minus$greater")
+                  ),
+                  List(TypeTree())
+                ),
+                List(v)
+              ),
+              _
+            ) =>
+          (Parameter.ByName fromTree k, List(TreeWithSource.Direct(v)))
         // case "key" -> "val" // scala 2.11
-        case (Apply(TypeApply(Select(Apply(TypeApply(Select(Select(This(TypeName("scala")), TermName("Predef")), TermName("ArrowAssoc")), List(TypeTree())), List(k)), TermName("$minus$greater")), List(TypeTree())), List(v)), _)  => (Parameter.ByName fromTree k, List(TreeWithSource.Direct(v)))
+        case (
+              Apply(
+                TypeApply(
+                  Select(
+                    Apply(
+                      TypeApply(
+                        Select(Select(This(TypeName("scala")), TermName("Predef")), TermName("ArrowAssoc")),
+                        List(TypeTree())
+                      ),
+                      List(k)
+                    ),
+                    TermName("$minus$greater")
+                  ),
+                  List(TypeTree())
+                ),
+                List(v)
+              ),
+              _
+            ) =>
+          (Parameter.ByName fromTree k, List(TreeWithSource.Direct(v)))
         // case ("key", "val")
-        case (Apply(TypeApply(Select(Select(Ident(TermName("scala")), TermName("Tuple2")), TermName("apply")), List(TypeTree(), TypeTree())), List(k, v)), _)                                                                        => (Parameter.ByName fromTree k, List(TreeWithSource.Direct(v)))
+        case (
+              Apply(
+                TypeApply(
+                  Select(Select(Ident(TermName("scala")), TermName("Tuple2")), TermName("apply")),
+                  List(TypeTree(), TypeTree())
+                ),
+                List(k, v)
+              ),
+              _
+            ) =>
+          (Parameter.ByName fromTree k, List(TreeWithSource.Direct(v)))
         // case "val"
         case (v, idx) => (Parameter.ByIndex(idx), List(TreeWithSource.Direct(v)))
       }

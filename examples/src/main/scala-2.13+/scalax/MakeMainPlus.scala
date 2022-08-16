@@ -1,5 +1,3 @@
 package scalax
 
-trait MakeMainPlus { this: MakeMain =>
-
-}
+trait MakeMainPlus { this: MakeMain => }

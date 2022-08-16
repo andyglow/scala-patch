@@ -10,18 +10,22 @@ class MismatchReportSpec extends AnyWordSpec {
   "MismatchReport" should {
 
     "generate report for arrays" in {
-      MismatchReport.compute(
-        Array(20),
-        Array(22, 5)
-      ).toString shouldBe """- root[0]: expected value is 2 bigger then actual
+      MismatchReport
+        .compute(
+          Array(20),
+          Array(22, 5)
+        )
+        .toString shouldBe """- root[0]: expected value is 2 bigger then actual
                             |- root[1]: expected: 5, actual: null""".stripMargin
     }
 
     "generate report for case classes" in {
-      MismatchReport.compute(
-        CC("foo", Some(Array(KV(1, "11"), KV(2, "22")))),
-        CC("bar", Some(Array(KV(1, "11"), KV(2, "222"))))
-      ).toString shouldBe """- root.id: expected: bar, actual: foo
+      MismatchReport
+        .compute(
+          CC("foo", Some(Array(KV(1, "11"), KV(2, "22")))),
+          CC("bar", Some(Array(KV(1, "11"), KV(2, "222"))))
+        )
+        .toString shouldBe """- root.id: expected: bar, actual: foo
                             |- root.nested[1].value: expected: 222, actual: 22""".stripMargin
     }
   }

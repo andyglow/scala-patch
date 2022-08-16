@@ -2,7 +2,6 @@ package scalax.patch
 
 import java.io.{StringWriter, Writer}
 
-
 trait PatchVisitor {
 
   def setValue(to: Any): Unit

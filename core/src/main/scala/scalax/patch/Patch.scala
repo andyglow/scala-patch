@@ -6,7 +6,8 @@ import scalax.ScalaVersionSpecificUtils._
 
 /** Represents a Patch function
   *
-  * @tparam T type that can by patched with this Patch
+  * @tparam T
+  *   type that can by patched with this Patch
   */
 trait Patch[T] { self =>
   import Patch._
@@ -25,31 +26,37 @@ trait Patch[T] { self =>
 
   /** Do patch the given value
     *
-    * @param x a value to patch
-    * @return patched value
+    * @param x
+    *   a value to patch
+    * @return
+    *   patched value
     */
   def apply(x: T): T
 
   /** Creates a Patch tha can be used to patch back (un-patch)
     *
-    * @return Inverted Patch
+    * @return
+    *   Inverted Patch
     */
   def inverted: Patch[T]
 
-  /** Makes a wrapping patch.
-    * Used for Sum types: Option, Either
+  /** Makes a wrapping patch. Used for Sum types: Option, Either
     *
-    * @param fw Function that converts a value to Monadic type (wrap)
-    * @param bk Function that converts Monadic value back to original value (un-wrap)
+    * @param fw
+    *   Function that converts a value to Monadic type (wrap)
+    * @param bk
+    *   Function that converts Monadic value back to original value (un-wrap)
     * @tparam TT
-    * @return Wrapped Patch
+    * @return
+    *   Wrapped Patch
     */
   def imap[TT](fw: T => TT, bk: TT => T): Patch[TT] = MappedPatch[T, TT](this)(fw, bk)
 
-  /** Reports some internal representation details so developer can have access to Patch function specific details.
-    * Can be used for rendering to text.
+  /** Reports some internal representation details so developer can have access to Patch function specific details. Can
+    * be used for rendering to text.
     *
-    * @param x Patch Visitor
+    * @param x
+    *   Patch Visitor
     */
   def visit(x: PatchVisitor): Unit
 }
@@ -156,7 +163,9 @@ object Patch {
     def visit(x: PatchVisitor): Unit = x.decreaseValue(delta)
   }
 
-  case class UpdateUnordered[F[_], T](delta: UnorderedCollectionAdapter.Diff[T])(implicit adapt: UnorderedCollectionAdapter[F, T]) extends Patch[F[T]] {
+  case class UpdateUnordered[F[_], T](delta: UnorderedCollectionAdapter.Diff[T])(implicit
+    adapt: UnorderedCollectionAdapter[F, T]
+  ) extends Patch[F[T]] {
     import UnorderedCollectionAdapter._
     import Diff._
     import Evt._
@@ -174,7 +183,9 @@ object Patch {
     }
   }
 
-  case class UpdateOrdered[F[_], T](delta: OrderedCollectionAdapter.Diff[T])(implicit adapt: OrderedCollectionAdapter[F, T]) extends Patch[F[T]] {
+  case class UpdateOrdered[F[_], T](delta: OrderedCollectionAdapter.Diff[T])(implicit
+    adapt: OrderedCollectionAdapter[F, T]
+  ) extends Patch[F[T]] {
     import OrderedCollectionAdapter._
     import Diff._
     import Evt._
@@ -187,14 +198,16 @@ object Patch {
     def inverted = UpdateOrdered(delta.inverted)
 
     def visit(x: PatchVisitor): Unit = delta.events foreach {
-      case Skip(n)      => x.skipItems(n)
-      case Insert(es)   => x.insertItems(es)
-      case Drop(es)     => x.dropItems(es)
-      case Upgrade(es)  => x.upgradeItems(es)
+      case Skip(n)     => x.skipItems(n)
+      case Insert(es)  => x.insertItems(es)
+      case Drop(es)    => x.dropItems(es)
+      case Upgrade(es) => x.upgradeItems(es)
     }
   }
 
-  case class UpdateIndexed[F[_], V](delta: Map[Int, Patch[V]], sizeDelta: Int)(implicit adapt: IndexedCollectionAdapter[F, V]) extends Patch[F[V]] {
+  case class UpdateIndexed[F[_], V](delta: Map[Int, Patch[V]], sizeDelta: Int)(implicit
+    adapt: IndexedCollectionAdapter[F, V]
+  ) extends Patch[F[V]] {
     import adapt._
 
     def isOpaque = delta.isEmpty || delta.values.forall(_.isOpaque)
@@ -205,13 +218,13 @@ object Patch {
       } else if (sizeDelta == 0) {
         x updatedWith delta
       } else {
-        val newSize = x.size + sizeDelta
+        val newSize      = x.size + sizeDelta
         val reducedDelta = delta collect { case (i, p) if i < newSize => (i, p) }
         { x resized sizeDelta } updatedWith reducedDelta
       }
     }
 
-    def inverted = UpdateIndexed[F, V](mapValues[Int, Patch[V], Patch[V]](delta, _.inverted), - sizeDelta)
+    def inverted = UpdateIndexed[F, V](mapValues[Int, Patch[V], Patch[V]](delta, _.inverted), -sizeDelta)
 
     def visit(x: PatchVisitor): Unit = {
       if (sizeDelta != 0) x.resize(sizeDelta)
@@ -223,7 +236,8 @@ object Patch {
     }
   }
 
-  case class UpdateKeyed[F[_, _], K, V](delta: Map[K, Patch[V]])(implicit adapt: KeyedCollectionAdapter[F, K, V]) extends Patch[F[K, V]] {
+  case class UpdateKeyed[F[_, _], K, V](delta: Map[K, Patch[V]])(implicit adapt: KeyedCollectionAdapter[F, K, V])
+      extends Patch[F[K, V]] {
     import adapt._
 
     def isOpaque: Boolean = delta.isEmpty || delta.values.forall(_.isOpaque)

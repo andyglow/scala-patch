@@ -11,14 +11,16 @@ trait PatchMain {
   def doPatch[T: PatchMaker](l: T, r: T): Unit
 }
 
-object PatchMainRunner extends PatchMain with PatchMainPlus  {
+object PatchMainRunner extends PatchMain with PatchMainPlus {
 
   def doPatch[T](l: T, r: T)(implicit pm: PatchMaker[T]): Unit = {
 
     val patch = Patch.make(l, r)
-    println(s"- { ----\n  pm: $pm\n  (left : ${stringOf(l)}) diff\n  (right: ${stringOf(r)}) =>\n  (patch: {\n${PatchVisitor stringify patch}  })")
+    println(
+      s"- { ----\n  pm: $pm\n  (left : ${stringOf(l)}) diff\n  (right: ${stringOf(r)}) =>\n  (patch: {\n${PatchVisitor stringify patch}  })"
+    )
 
-    val patchedL = patch(l)
+    val patchedL   = patch(l)
     val unpatchedR = patch.inverted(r)
 
     println()
@@ -130,14 +132,12 @@ object PatchMainRunner extends PatchMain with PatchMainPlus  {
       Right(234)
     )
 
-
     doPatch(
       Array(CC("name", 23, Map("prop1" -> "v1", "prop2" -> "v2"), Array("foo"), true)),
       Array(CC("name", 24, Map("prop1" -> "v1", "prop2" -> "vv2"), Array("bar"), true))
     )
 
   }
-
 
   case class CC(
     name: String,
@@ -170,7 +170,6 @@ object PatchMainRunner extends PatchMain with PatchMainPlus  {
 //      }
 //    }
 
-
 //    implicit val ccpm: PatchMaker[CC] = {
 //      case class $CC$Patch(name: scalax.patch.Patch[String], age: scalax.patch.Patch[Int], props: scalax.patch.Patch[scala.collection.immutable.Map[String,String]]) extends scalax.patch.Patch[scalax.Main.CC] {
 //        def apply(x: scalax.Main.CC): scalax.Main.CC = CC(name = this.name(x.name), age = this.age(x.age), props = this.props(x.props));
@@ -192,7 +191,6 @@ object PatchMainRunner extends PatchMain with PatchMainPlus  {
 //        case scala.Tuple2((l @ _), (r @ _)) => $CC$Patch(name = Patch.make(l.name, r.name), age = Patch.make(l.age, r.age), props = Patch.make(l.props, r.props))
 //      }
 //    })
-
 
 //    import scalax.generic.semiauto._
 //    implicit val ccpm: PatchMaker[CC] = derivePatchMaker[CC]

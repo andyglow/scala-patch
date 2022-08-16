@@ -14,7 +14,7 @@ trait PatchSpecs { this: AnyFunSuite =>
   def doPatch[T: PatchMaker: MutationFighter](l: T, r: T)(implicit pos: Position): Unit = {
     val pm = PatchMaker[T]
     test(s"${stringOf(l)} | ${stringOf(r)} ($pm)") {
-      val patch = pm.make(l, r)
+      val patch  = pm.make(l, r)
       val iPatch = patch.inverted
 
       patch should applyTo(MutationFighter copy l, MutationFighter copy r)

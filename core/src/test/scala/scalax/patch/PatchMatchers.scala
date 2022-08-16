@@ -13,9 +13,9 @@ trait PatchMatchers {
         arr.toList.toArray
       } else l
 
-      val ll = patch(l)
+      val ll          = patch(l)
       val eq: Boolean = if (l.getClass.isArray) {
-        val left = ll.asInstanceOf[Array[_]].toList
+        val left  = ll.asInstanceOf[Array[_]].toList
         val right = r.asInstanceOf[Array[_]].toList
         left == right
       } else if (pm.kind == PatchMaker.Kind.UnorderedCollection) {

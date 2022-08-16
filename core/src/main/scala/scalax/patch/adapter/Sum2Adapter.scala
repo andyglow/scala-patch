@@ -2,7 +2,6 @@ package scalax.patch.adapter
 
 import scalax.ScalaVersionSpecificUtils._
 
-
 sealed trait Sum2Adapter[F[_, _], L, R] {
 
   def wrapLeft(x: L): F[L, R]

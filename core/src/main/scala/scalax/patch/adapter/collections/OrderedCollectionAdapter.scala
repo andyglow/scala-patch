@@ -4,7 +4,6 @@ import scalax.patch._
 
 import scala.collection._
 
-
 trait OrderedCollectionAdapter[F[_], T] {
   import OrderedCollectionAdapter._
 
@@ -13,7 +12,7 @@ trait OrderedCollectionAdapter[F[_], T] {
 
   class OrderedOps(coll: F[T]) {
     def computeDiff(another: F[T]): Diff[T] = diff(coll, another)
-    def applyDiff(diff: Diff[T]): F[T] = apply(coll, diff)
+    def applyDiff(diff: Diff[T]): F[T]      = apply(coll, diff)
   }
 
   implicit def mkOrderedOps(coll: F[T]): OrderedOps = new OrderedOps(coll)
@@ -26,24 +25,24 @@ object OrderedCollectionAdapter extends ScalaVersionSpecificOrderedCollectionAda
     import Evt._
 
     def inverted: Diff[T] = Diff(events map {
-      case Skip(n)      => Skip[T](n)
-      case Insert(xs)   => Drop(xs)
-      case Drop(xs)     => Insert(xs)
-      case Upgrade(xs)  => Upgrade(xs map { _.inverted })
+      case Skip(n)     => Skip[T](n)
+      case Insert(xs)  => Drop(xs)
+      case Drop(xs)    => Insert(xs)
+      case Upgrade(xs) => Upgrade(xs map { _.inverted })
     })
 
-    def +:(e: Evt[T]): Diff[T] = (events.headOption, e) match {
-      case (Some(Skip(n)), Skip(en))        => Diff(events = Skip[T](n + en) +: events.drop(1))
-      case (Some(Upgrade(s)), Upgrade(es))  => Diff(events = Upgrade(es ++ s) +: events.drop(1))
-      case _                                => Diff(events = e +: events)
+    def +:(e: Evt[T]): Diff[T]  = (events.headOption, e) match {
+      case (Some(Skip(n)), Skip(en))       => Diff(events = Skip[T](n + en) +: events.drop(1))
+      case (Some(Upgrade(s)), Upgrade(es)) => Diff(events = Upgrade(es ++ s) +: events.drop(1))
+      case _                               => Diff(events = e +: events)
     }
     def ++(d: Diff[T]): Diff[T] = Diff(events = events ++ d.events)
 
     override def toString: String = s"Diff(${events mkString ","})"
   }
-  object Diff {
-    def empty[T] = Diff[T](Nil)
-    def apply[T](x: Evt[T]): Diff[T] = Diff(List(x))
+  object Diff                                   {
+    def empty[T]                                                                 = Diff[T](Nil)
+    def apply[T](x: Evt[T]): Diff[T]                                             = Diff(List(x))
     def compute[T: PatchMaker](left: LinearSeq[T], right: LinearSeq[T]): Diff[T] = {
       import Evt._
       val l = left.headOption
@@ -59,8 +58,8 @@ object OrderedCollectionAdapter extends ScalaVersionSpecificOrderedCollectionAda
     }
     sealed trait Evt[T]
     object Evt {
-      case class Skip[T](n: Int) extends Evt[T]
-      case class Insert[T](elements: List[T]) extends Evt[T] {
+      case class Skip[T](n: Int)                extends Evt[T]
+      case class Insert[T](elements: List[T])   extends Evt[T] {
         override def toString: String = s"Insert(${elements mkString ","})"
       }
       case class Upgrade[T](xs: List[Patch[T]]) extends Evt[T] {
@@ -69,7 +68,7 @@ object OrderedCollectionAdapter extends ScalaVersionSpecificOrderedCollectionAda
       object Upgrade {
         def apply[T: PatchMaker](l: T, r: T): Upgrade[T] = Upgrade(List(Patch.make(l, r)))
       }
-      case class Drop[T](elements: List[T]) extends Evt[T] {
+      case class Drop[T](elements: List[T])     extends Evt[T] {
         override def toString: String = s"Drop(${elements mkString ","})"
       }
     }

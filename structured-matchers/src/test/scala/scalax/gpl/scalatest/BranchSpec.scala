@@ -12,7 +12,7 @@ class BranchSpec extends AnyFunSuite {
     b.append(5)
     b.append(new StringBuilder("zzz"))
 
-    b.elements should contain inOrderOnly(
+    b.elements should contain inOrderOnly (
       BranchElement.StructField("foo"),
       BranchElement.CollectionIndex(5),
       BranchElement.MapKey(new StringBuilder("zzz"))
@@ -27,7 +27,7 @@ class BranchSpec extends AnyFunSuite {
     b.shrink()
     b.shrink()
 
-    b.elements should contain only(
+    b.elements should contain only (
       BranchElement.StructField("foo")
     )
   }

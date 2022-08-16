@@ -7,17 +7,17 @@ trait UPatchMakerDerivation extends UCommons {
 
   def derivePatchMaker(tpe: Type): Tree = {
 
-    val patchTpe = appliedType(patch, tpe)
+    val patchTpe      = appliedType(patch, tpe)
     val patchTermName = patchTpe.typeSymbol.name.toTermName
 
-    val constantPatchMakerTpe = appliedType(constantPatchMaker, tpe)
+    val constantPatchMakerTpe      = appliedType(constantPatchMaker, tpe)
     val constantPatchMakerTermName = constantPatchMakerTpe.typeSymbol.name.toTermName
 
-    val abstractPatchMakerTpe = appliedType(abstractPatchMaker, tpe)
+    val abstractPatchMakerTpe      = appliedType(abstractPatchMaker, tpe)
     val abstractPatchMakerTypeName = abstractPatchMakerTpe.typeSymbol.name.toTypeName
     val abstractPatchMakerTermName = abstractPatchMakerTpe.typeSymbol.name.toTermName
 
-    val patchMakerTpe = appliedType(patchMaker, tpe)
+    val patchMakerTpe      = appliedType(patchMaker, tpe)
     val patchMakerTermName = patchMakerTpe.typeSymbol.name.toTermName
 
     val patchVisitorTypeName = patchVisitor.typeSymbol.name.toTypeName
@@ -25,7 +25,7 @@ trait UPatchMakerDerivation extends UCommons {
     val tree = tpe match {
 
       case CaseClass(cc) =>
-        val patchClassTypeName = TypeName(s"$$${cc.name}$$Patch")
+        val patchClassTypeName      = TypeName(s"$$${cc.name}$$Patch")
         val patchMakerClassTypeName = TypeName(s"$$${cc.name}$$PatchMaker")
 
         val patchClassParams = cc.fields map { f =>
@@ -77,7 +77,7 @@ trait UPatchMakerDerivation extends UCommons {
         }
 
         val patchClassToStringMethodBody = {
-          val eq = "="
+          val eq  = "="
           val sep = ", "
 
           cc.fields.map { f =>
@@ -89,7 +89,7 @@ trait UPatchMakerDerivation extends UCommons {
         }
 
         val patchMakerClassToStringMethodBody = {
-          val eq = "="
+          val eq  = "="
           val sep = ", "
 
           cc.fields.map { f =>

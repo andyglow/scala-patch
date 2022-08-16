@@ -5,27 +5,25 @@ import scala.util.control.NonFatal
 
 //import scala.reflect.NameTransformer
 
-
 private[macros] trait UProductTypes { this: ULogging with UContext with UParameters with UCommons =>
   import c.universe._
 
   val optionTpe: Type = weakTypeOf[Option[_]]
 
   def resolveGenericType(x: Type, from: List[Symbol], to: List[Type]): Type = {
-    try x.substituteTypes(from, to) catch {
+    try x.substituteTypes(from, to)
+    catch {
       case NonFatal(_) =>
         c.abort(
           c.enclosingPosition,
           s"""Cannot resolve generic type(s) for `$x`
              |Please provide a custom implicitly accessible json.Schema for it.
-             |""".stripMargin)
+             |""".stripMargin
+        )
     }
   }
 
-  protected case class CaseClass(
-    name: TypeName,
-    tpe: Type,
-    fields: Seq[CaseClass.Field]) extends {
+  protected case class CaseClass(name: TypeName, tpe: Type, fields: Seq[CaseClass.Field]) extends {
 
     def newInstanceTree(pmap: ParameterMap, default: => Tree): Tree = {
       // TODO: index out of bound
@@ -34,36 +32,38 @@ private[macros] trait UProductTypes { this: ULogging with UContext with UParamet
           (name, v.map(show(_)).mkString(", "))
       }
       if (unknown.nonEmpty) {
-        err(s"unknown parameter names;\n ${unknown.map { case (k, tpe) => s"$k: $tpe"}.mkString("\n ")}")
+        err(s"unknown parameter names;\n ${unknown.map { case (k, tpe) => s"$k: $tpe" }.mkString("\n ")}")
       }
 
       val paramTree = fields.zipWithIndex map { case (f, i) =>
         def byName            = for {
-                                  trees <- pmap.findByName(f.name.decodedName.toString)
-                                  tree  <- trees.find(_.tree.tpe <:< f.tpe)
-                                } yield tree
+          trees <- pmap.findByName(f.name.decodedName.toString)
+          tree  <- trees.find(_.tree.tpe <:< f.tpe)
+        } yield tree
         def byIndex           = for {
-                                  trees <- pmap.findByIndex(i)
-                                  tree  <- trees.find(_.tree.tpe <:< f.tpe)
-                                } yield tree
+          trees <- pmap.findByIndex(i)
+          tree  <- trees.find(_.tree.tpe <:< f.tpe)
+        } yield tree
         def byOwnDefault      = f.default
-        def byImplicitDefault = if (default.nonEmpty) q"$default.value.${f.name}" else {
+        def byImplicitDefault = if (default.nonEmpty) q"$default.value.${f.name}"
+        else {
           val sb = new StringBuilder(s"value for '${f.name}: ${show(f.tpe)}' is not found;")
           pmap.findTrees(f.name.decodedName.toString, i) foreach {
-            case TreeWithSource.Direct(tree) => sb append s"\n\t- '${suffixName(tree)}: ${show(tree.tpe)}': type mismatch"
-            case TreeWithSource.FromCaseClass(tpe, tree) => sb append s"\n\t- '${show(tpe)}.${suffixName(tree)}: ${show(tree.tpe)}': type mismatch"
+            case TreeWithSource.Direct(tree)             =>
+              sb append s"\n\t- '${suffixName(tree)}: ${show(tree.tpe)}': type mismatch"
+            case TreeWithSource.FromCaseClass(tpe, tree) =>
+              sb append s"\n\t- '${show(tpe)}.${suffixName(tree)}: ${show(tree.tpe)}': type mismatch"
           }
           sb append s"\n\t- no default value is specified for '${show(tpe)}.${f.name}'"
           sb append s"\n\t- no 'scalax.Default[${show(tpe)}]' is available in implicit scope"
           err(sb.toString)
         }
-        val value = ((byName orElse byIndex).map { valTree =>
+        val value             = ((byName orElse byIndex).map { valTree =>
           val valTpe = c.typecheck(valTree.tree).tpe
           if (!(valTpe <:< f.tpe)) {
             val autoBoxing = c.inferImplicitView(valTree.tree, valTpe, f.tpe)
             if (autoBoxing.isEmpty)
-              err(
-                s"""parameter '${f.name}'; type mismatch;
+              err(s"""parameter '${f.name}'; type mismatch;
                    | found   : ${show(valTpe)}
                    | required: ${show(f.tpe)}
                    |""".stripMargin)
@@ -93,19 +93,20 @@ private[macros] trait UProductTypes { this: ULogging with UContext with UParamet
         case NoSymbol =>
           c.abort(c.enclosingPosition, s"No apply function found for ${subjectCompanion.fullName}")
 
-        case x => x.asTerm.alternatives flatMap { apply =>
-          val method = apply.asMethod
+        case x =>
+          x.asTerm.alternatives flatMap { apply =>
+            val method = apply.asMethod
 
-          def areAllImplicit(pss: List[List[Symbol]]): Boolean = pss forall {
-            case p :: _ => p.isImplicit
-            case _      => false
-          }
+            def areAllImplicit(pss: List[List[Symbol]]): Boolean = pss forall {
+              case p :: _ => p.isImplicit
+              case _      => false
+            }
 
-          method.paramLists match {
-            case ps :: pss if ps.nonEmpty && areAllImplicit(pss) => List(method)
-            case _ => List.empty
+            method.paramLists match {
+              case ps :: pss if ps.nonEmpty && areAllImplicit(pss) => List(method)
+              case _                                               => List.empty
+            }
           }
-        }
       }
     }
 
@@ -118,7 +119,8 @@ private[macros] trait UProductTypes { this: ULogging with UContext with UParamet
       effectiveTpe: Type,
       annotations: List[Annotation],
       default: Option[Tree],
-      isOption: Boolean) {
+      isOption: Boolean
+    ) {
 
       def hasDefault: Boolean = default.isDefined
     }
@@ -139,21 +141,18 @@ private[macros] trait UProductTypes { this: ULogging with UContext with UParamet
       val subjectCompanion    = lookupCompanionOf(subjectCompanionSym)
 
       def toField(fieldSym: TermSymbol, i: Int): Field = {
-        val name        = NameTransformer.decode(fieldSym.name.toString)
-        val fieldTpe    = fieldSym.typeSignature.dealias // In(tpe).dealias
-        val isOption    = fieldTpe <:< optionTpe
-        val hasDefault  = fieldSym.isParamWithDefault
-        val default     = if (hasDefault) {
+        val name       = NameTransformer.decode(fieldSym.name.toString)
+        val fieldTpe   = fieldSym.typeSignature.dealias // In(tpe).dealias
+        val isOption   = fieldTpe <:< optionTpe
+        val hasDefault = fieldSym.isParamWithDefault
+        val default    = if (hasDefault) {
           val getter = TermName("apply$default$" + (i + 1))
           Some(q"$subjectCompanion.$getter")
         } else
           None
 
         def effectiveType = if (tpe.typeArgs.nonEmpty && tpe.typeSymbol.isClass) {
-          resolveGenericType(
-            fieldTpe,
-            tpe.typeSymbol.asClass.typeParams,
-            tpe.typeArgs)
+          resolveGenericType(fieldTpe, tpe.typeSymbol.asClass.typeParams, tpe.typeArgs)
         } else
           fieldTpe
 
@@ -163,12 +162,13 @@ private[macros] trait UProductTypes { this: ULogging with UContext with UParamet
             effectiveType
 
         Field(
-          name          = TermName(name),
-          tpe           = fieldTpe,
-          effectiveTpe  = specifiedType,
-          annotations   = annotationMap.getOrElse(name, List.empty),
-          default       = default,
-          isOption      = isOption)
+          name = TermName(name),
+          tpe = fieldTpe,
+          effectiveTpe = specifiedType,
+          annotations = annotationMap.getOrElse(name, List.empty),
+          default = default,
+          isOption = isOption
+        )
       }
 
       applyMethod(subjectCompanion)

@@ -2,7 +2,6 @@ package scalax.patch.adapter.collections
 
 import scalax.patch._
 
-
 trait KeyedCollectionAdapter[F[_, _], K, V] {
 
   def valuePatchMaker: PatchMaker[V]
@@ -13,8 +12,8 @@ trait KeyedCollectionAdapter[F[_, _], K, V] {
 
   class KeyedOps(coll: F[K, V]) {
 
-    def updatedWith(delta: Map[K, Patch[V]]): F[K, V] = delta.foldLeft(coll) {
-      case (coll, (key, patch)) => applyPatch(coll, key, patch)
+    def updatedWith(delta: Map[K, Patch[V]]): F[K, V] = delta.foldLeft(coll) { case (coll, (key, patch)) =>
+      applyPatch(coll, key, patch)
     }
   }
 

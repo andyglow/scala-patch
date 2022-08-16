@@ -1,11 +1,10 @@
 package scalax.patch.texts
 
-import java.{ util => ju }
+import java.{util => ju}
 
 import scalax.patch._
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch.{Patch => JPatch, Diff => JDiff, Operation => JOper}
 import scala.collection.JavaConverters._
-
 
 case class TextPatch(steps: List[TextPatch.Step]) extends Patch[String] {
   import TextPatch._
@@ -35,28 +34,19 @@ object TextPatch {
 
   val Empty = TextPatch(Nil)
 
-  final case class Step(
-    start1: Int,
-    start2: Int,
-    len1: Int,
-    len2: Int,
-    events: List[Evt]) {
+  final case class Step(start1: Int, start2: Int, len1: Int, len2: Int, events: List[Evt]) {
 
     def inverted: Step = Step(start1, start1, len1, len2, events map { _.inverted })
 
-    override def toString: String = s"$start1/$start2 $len1/$len2${events.mkString(" "," ","")})"
+    override def toString: String = s"$start1/$start2 $len1/$len2${events.mkString(" ", " ", "")})"
   }
 
   final object Step {
 
     def apply(s1: Int, s2: Int, l1: Int, l2: Int, x: Evt, xs: Evt*): Step = Step(s1, s2, l1, l2, x +: xs.toList)
 
-    def fromDMP(x: JPatch): Step = Step(
-      x.start1,
-      x.start2,
-      x.length1,
-      x.length2,
-      x.diffs.asScala.map(Evt.fromDMP).toList)
+    def fromDMP(x: JPatch): Step =
+      Step(x.start1, x.start2, x.length1, x.length2, x.diffs.asScala.map(Evt.fromDMP).toList)
 
     def toDMP(x: Step): JPatch = {
       val p = new JPatch
@@ -77,7 +67,7 @@ object TextPatch {
   final object Evt {
 
     final case class Equal(text: String) extends Evt {
-      def inverted: Evt = this
+      def inverted: Evt             = this
       override def toString: String = s"Skip(${text.length})"
     }
 
