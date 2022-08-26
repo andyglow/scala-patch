@@ -6,6 +6,8 @@ import ReleaseTransformations._
 // https://github.com/xerial/sbt-sonatype/issues/71
 ThisBuild / publishTo := sonatypePublishTo.value
 
+ThisBuild / versionScheme := Some("pvp")
+
 lazy val scalaV = settingKey[ScalaVer]("Current Scala Version")
 
 lazy val commons = Seq(
@@ -51,6 +53,7 @@ lazy val commons = Seq(
       url = url("https://ua.linkedin.com/in/andyglow")
     )
   ),
+  releaseCrossBuild                      := true,
   releasePublishArtifactsAction          := PgpKeys.publishSigned.value,
   releaseProcess                         := Seq[ReleaseStep](
     checkSnapshotDependencies,
