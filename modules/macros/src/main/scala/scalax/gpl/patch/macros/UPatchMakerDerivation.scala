@@ -1,16 +1,15 @@
 package scalax.gpl.patch.macros
 
-
 trait UPatchMakerDerivation extends UCommons {
   import c.universe._
 
   class Univer(ccName: TypeName, rootTpe: Type) {
-    val T                                           = new ConstantTypes(rootTpe)
+    val T = new ConstantTypes(rootTpe)
 
     case class BundleTree(fields: List[PatchFieldTree]) {
 
       def tree: Tree = {
-        val n = fields.length
+        val n  = fields.length
         val xs = fields flatMap { f =>
           List(f.nameAssignment, f.extractAssignment, f.pmAssignment)
         }
@@ -31,10 +30,10 @@ trait UPatchMakerDerivation extends UCommons {
       tpe: Type
     ) {
 
-      lazy val patchMakerType    = appliedType(T.patchMaker.typeConstructor, tpe)
-      lazy val patchMakerTree    = c.inferImplicitValue(patchMakerType) orElse q"new ${T.names.purePatchMaker}[$tpe]()"
+      lazy val patchMakerType = appliedType(T.patchMaker.typeConstructor, tpe)
+      lazy val patchMakerTree = c.inferImplicitValue(patchMakerType) orElse q"new ${T.names.purePatchMaker}[$tpe]()"
 
-      lazy val nameAssignment = {
+      lazy val nameAssignment    = {
         val n = TermName(s"_${idx}_name")
         q"$n = ${name.decodedName.toString}"
       }
@@ -42,7 +41,7 @@ trait UPatchMakerDerivation extends UCommons {
         val n = TermName(s"_${idx}_extract")
         q"$n = _.$name"
       }
-      lazy val pmAssignment = {
+      lazy val pmAssignment      = {
         val n = TermName(s"_${idx}_patchMaker")
         q"$n = $patchMakerTree"
       }

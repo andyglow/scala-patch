@@ -75,10 +75,10 @@ lazy val commons = Seq(
 lazy val core = (project in file("modules/core"))
   .enablePlugins(spray.boilerplate.BoilerplatePlugin)
   .settings(
-  commons,
-  name := "scala-gpl",
-  scalacOptions ++= Seq("-language:implicitConversions", "-language:higherKinds")
-)
+    commons,
+    name := "scala-gpl",
+    scalacOptions ++= Seq("-language:implicitConversions", "-language:higherKinds")
+  )
 
 lazy val macros = (project in file("modules/macros"))
   .dependsOn(core)

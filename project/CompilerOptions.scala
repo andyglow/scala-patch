@@ -13,7 +13,7 @@ object CompilerOptions {
 
   private val opts212 = base ++ Seq(
     "-Ywarn-unused:imports,-patvars,-privates,-locals,-implicits",
-    "-Xlint:-unused,_"/*,
+    "-Xlint:-unused,_" /*,
     "-Ydebug"*/
   )
 
