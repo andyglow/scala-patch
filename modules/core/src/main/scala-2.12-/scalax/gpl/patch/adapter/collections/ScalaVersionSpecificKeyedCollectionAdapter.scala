@@ -19,9 +19,7 @@ trait ScalaVersionSpecificKeyedCollectionAdapter {
       }
       val builder   = cc()
       effective foreach { builder += _ }
-      val res       = builder.result
-      // println("Map.patch(" + coll + ", " + patch + ") -> " + res + "/" + effective + "; // " + cc)
-      res
+      builder.result
     }
 
     override def diff(left: F[K, V], right: F[K, V]): Map[K, Patch[V]] = {

@@ -4,7 +4,6 @@ import scalax.gpl.Exported
 import scalax.gpl.patch.PatchMaker
 import scalax.gpl.patch.macros.UPatchMakerDerivation
 
-import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
 
 class ExportedPatchMakerMacro(val c: blackbox.Context) extends UPatchMakerDerivation {
@@ -14,7 +13,8 @@ class ExportedPatchMakerMacro(val c: blackbox.Context) extends UPatchMakerDeriva
     val tree = derivePatchMaker(t.tpe)
     val x    = reify(Exported(c.Expr[PatchMaker[T]](tree).splice))
 
-    c.info(c.enclosingPosition, showCode(x.tree), force = true)
+//    if (c.settings.contains("print-patch-maker-code"))
+      info(showCode(x.tree))
 
     x
   }

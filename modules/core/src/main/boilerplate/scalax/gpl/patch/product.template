@@ -1,0 +1,50 @@
+package scalax.gpl.patch
+
+object ProductPatch {
+
+    [#case class Patch1[CC <: Product, [#A0#]](
+      [#_0_name: String, _0_extract: CC => A0, _0_patch: Patch[A0]#,
+      ],
+      combine: ([#A0#]) => CC
+    ) extends Patch[CC] {
+
+      override def apply(x: CC): CC = combine(
+        [#_0_patch(_0_extract(x))#,
+        ]
+      )
+
+      override def isOpaque: Boolean = [#_0_patch.isOpaque# && ]
+
+      override def inverted: Patch[CC] = copy(
+        [#_0_patch = _0_patch.inverted#,
+        ]
+      )
+
+      override def visit(x: PatchVisitor): Unit = {
+        [#if (_0_patch.nonOpaque) {
+          x.intoField(_0_name)
+          _0_patch.visit(x)
+          x.outofField(_0_name)
+        }#
+        ]
+      }
+    }
+
+    case class Maker1[CC <: Product, [#A0#]](
+      name: String,
+      [#_0_name: String, _0_extract: CC => A0, _0_patchMaker: PatchMaker[A0]#,
+      ],
+      combine: ([#A0#]) => CC
+    ) extends PatchMaker[CC] {
+
+      override def make(l: CC, r: CC): Patch[CC] = Patch1(
+        [#_0_name, _0_extract, _0_patchMaker.make(_0_extract(l), _0_extract(r))#,
+        ],
+        combine
+      )
+
+      override def kind: PatchMaker.Kind = PatchMaker.Kind.Structure(name)
+    }#
+]
+
+}

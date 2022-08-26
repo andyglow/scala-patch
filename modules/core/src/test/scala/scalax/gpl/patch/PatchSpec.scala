@@ -15,7 +15,6 @@ trait PatchSpecs { this: AnyFunSuite =>
   def doPatch[T: PatchMaker: MutationFighter](l: T, r: T)(implicit pos: Position): Unit = {
     val pm = PatchMaker[T]
     test(s"${stringOf(l)} | ${stringOf(r)} ($pm)") {
-      println(pm)
       val patch  = pm.make(l, r)
       val iPatch = patch.inverted
 

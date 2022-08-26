@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype._
 import ReleaseTransformations._
 
 // https://github.com/xerial/sbt-sonatype/issues/71
-publishTo in ThisBuild := sonatypePublishTo.value
+ThisBuild / publishTo := sonatypePublishTo.value
 
 lazy val scalaV = settingKey[ScalaVer]("Current Scala Version")
 
@@ -35,7 +35,7 @@ lazy val commons = Seq(
       case _                       => Nil
     }
   },
-  scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits", "-no-link-warnings"),
+  Compile / doc / scalacOptions ++= Seq("-groups", "-implicits", "-no-link-warnings"),
   licenses                               := Seq(("LGPL-3.0", url("http://opensource.org/licenses/LGPL-3.0"))),
   sonatypeProfileName                    := "com.github.andyglow",
   publishMavenStyle                      := true,
@@ -66,10 +66,12 @@ lazy val commons = Seq(
     ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
     pushChanges
   ),
-  libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12" % Test
+  libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.13" % Test
 )
 
-lazy val core = (project in file("modules/core")).settings(
+lazy val core = (project in file("modules/core"))
+  .enablePlugins(spray.boilerplate.BoilerplatePlugin)
+  .settings(
   commons,
   name := "scala-gpl",
   scalacOptions ++= Seq("-language:implicitConversions", "-language:higherKinds")
@@ -102,7 +104,7 @@ lazy val structuredMatchers = (project in file("modules/scalatest-structured-mat
   .settings(
     commons,
     name                                   := "scalatest-structured-matchers",
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12"
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.13"
   )
 
 lazy val examples = (project in file("examples"))
@@ -113,8 +115,8 @@ lazy val root = (project in file("."))
   .aggregate(core, macros, generic, texts, structuredMatchers, examples)
   .settings(
     commons,
-    publish / skip      := true,
-    publishArtifact     := false,
-    aggregate in update := false,
-    name                := "scala-gpl-root"
+    publish / skip     := true,
+    publishArtifact    := false,
+    update / aggregate := false,
+    name               := "scala-gpl-root"
   )

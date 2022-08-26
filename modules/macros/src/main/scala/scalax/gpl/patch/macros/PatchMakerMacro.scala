@@ -10,8 +10,8 @@ class PatchMakerMacro(val c: blackbox.Context) extends UPatchMakerDerivation {
   def deriveImpl[T](implicit t: c.WeakTypeTag[T]): c.Expr[PatchMaker[T]] = {
     val tree = derivePatchMaker(t.tpe)
 
-//    if (c.settings.contains("print-patch-maker-code"))
-    info(showCode(tree))
+    if (c.settings.contains("print-patch-maker-code"))
+      info(showCode(tree))
 
     c.Expr[PatchMaker[T]](tree)
   }

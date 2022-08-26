@@ -1,13 +1,18 @@
 package scalax.gpl.patch.macros
 
+import scala.util.Random
+
 trait UPatchMakerDerivation extends UCommons {
   import c.universe._
+  private val rand = new Random()
 
   class Univer(ccName: TypeName, rootTpe: Type) {
+    val suffix = rand.alphanumeric.take(4).mkString
+
     val T                                           = new ConstantTypes(rootTpe)
-    val ccPatchTypeName: TypeName                   = TypeName(s"$$${ccName}$$Patch")
-    val ccPatchMakerTypeName: TypeName              = TypeName(s"$$${ccName}$$PatchMaker")
-    val ccNestedPatchMakersHolderTypeName: TypeName = TypeName(s"$$${ccName}$$PatchMakerHolder")
+    val ccPatchTypeName: TypeName                   = TypeName(s"${ccName}_${suffix}_Patch")
+    val ccPatchMakerTypeName: TypeName              = TypeName(s"${ccName}_${suffix}_PatchMaker")
+    val ccNestedPatchMakersHolderTypeName: TypeName = TypeName(s"${ccName}_${suffix}_mPatchMakerHolder")
 
     case class BundleTree(fields: List[PatchFieldTree]) {
 
@@ -139,7 +144,7 @@ trait UPatchMakerDerivation extends UCommons {
 
           ${patchMakerHolder.tree}
 
-          new $ccPatchMakerTypeName()
+          new $ccPatchMakerTypeName(): ${T.names.patchMaker}[$rootTpe]
          """
     }
 
@@ -170,7 +175,7 @@ trait UPatchMakerDerivation extends UCommons {
         ast.tree
 
       case _ =>
-        q"new ${T.purePatchMaker.typeConstructor}[$tpe]()"
+        q"new ${T.purePatchMaker}[$tpe](): ${T.names.patchMaker}[$tpe]"
     }
 
     tree
