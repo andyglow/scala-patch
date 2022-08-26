@@ -2,8 +2,8 @@ package scalax
 
 import java.time._
 
-import scalax.patch._
-import scalax.generic.auto._
+import scalax.gpl.patch._
+//import PatchMaker.purely._
 import runtime.ScalaRunTime.stringOf
 
 trait PatchMain {
