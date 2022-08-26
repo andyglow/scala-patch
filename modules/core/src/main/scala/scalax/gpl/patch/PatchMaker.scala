@@ -13,7 +13,6 @@ trait PatchMaker[T] {
   def kind: PatchMaker.Kind
 }
 
-
 sealed trait LowestPriorityPatchMaker {
   implicit def purePM[T]: PatchMaker[T] = PurePatchMaker[T]()
 }

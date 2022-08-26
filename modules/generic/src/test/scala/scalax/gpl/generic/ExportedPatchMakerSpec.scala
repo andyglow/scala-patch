@@ -21,7 +21,7 @@ class ExportedPatchMakerSpec extends AnyFunSuite {
     patch.isOpaque shouldBe false
     patch.getClass.getSimpleName should fullyMatch regex """\$CC\$Patch\$\d+"""
     patch shouldBe a[Product]
-    val pp = patch.asInstanceOf[Product]
+    val pp    = patch.asInstanceOf[Product]
     pp.productArity shouldBe 3
     pp.productElement(0) shouldBe Patch.Empty[String]
     pp.productElement(1) shouldBe Patch.Empty[Option[String]]

@@ -1,13 +1,12 @@
 package scalax.gpl.patch.macros
 
-
 trait UPatchMakerDerivation extends UCommons {
   import c.universe._
 
   class Univer(ccName: TypeName, rootTpe: Type) {
-    val T = new ConstantTypes(rootTpe)
-    val ccPatchTypeName: TypeName = TypeName(s"$$${ccName}$$Patch")
-    val ccPatchMakerTypeName: TypeName = TypeName(s"$$${ccName}$$PatchMaker")
+    val T                                           = new ConstantTypes(rootTpe)
+    val ccPatchTypeName: TypeName                   = TypeName(s"$$${ccName}$$Patch")
+    val ccPatchMakerTypeName: TypeName              = TypeName(s"$$${ccName}$$PatchMaker")
     val ccNestedPatchMakersHolderTypeName: TypeName = TypeName(s"$$${ccName}$$PatchMakerHolder")
 
     case class BundleTree(fields: List[PatchFieldTree]) {
@@ -60,7 +59,7 @@ trait UPatchMakerDerivation extends UCommons {
 
         // Patch ToString Method Body
         def toStringBody: Tree = {
-          val eq = "="
+          val eq  = "="
           val sep = ", "
 
           val details = fields.map { f =>
@@ -98,7 +97,7 @@ trait UPatchMakerDerivation extends UCommons {
 
         // PatchMaker ToString Method Body
         val toStringBody = {
-          val eq = "="
+          val eq  = "="
           val sep = ", "
 
           val fieldsToString = fields.map { f =>
@@ -148,18 +147,17 @@ trait UPatchMakerDerivation extends UCommons {
       name: TermName,
       tpe: Type
     ) {
-      lazy val patchType = appliedType(T.patch.typeConstructor, tpe)
+      lazy val patchType  = appliedType(T.patch.typeConstructor, tpe)
       lazy val patchField = ValDef(Modifiers(), name, TypeTree(patchType), EmptyTree)
 
-      lazy val patchMakerType = appliedType(T.patchMaker.typeConstructor, tpe)
-      lazy val patchMakerTree = c.inferImplicitValue(patchMakerType) orElse q"new ${T.names.purePatchMaker}[$tpe]()"
-      lazy val patchMakerName = TermName("$" + name + "$pm")
-      lazy val patchMakerValDef = q"lazy val $patchMakerName: ${T.names.patchMaker}[$tpe] = $patchMakerTree"
+      lazy val patchMakerType    = appliedType(T.patchMaker.typeConstructor, tpe)
+      lazy val patchMakerTree    = c.inferImplicitValue(patchMakerType) orElse q"new ${T.names.purePatchMaker}[$tpe]()"
+      lazy val patchMakerName    = TermName("$" + name + "$pm")
+      lazy val patchMakerValDef  = q"lazy val $patchMakerName: ${T.names.patchMaker}[$tpe] = $patchMakerTree"
       lazy val patchMakerAddress = q"${ccNestedPatchMakersHolderTypeName.toTermName}.$patchMakerName"
     }
 
   }
-
 
   def derivePatchMaker(tpe: Type): Tree = {
     val T = new ConstantTypes(tpe)
@@ -167,7 +165,7 @@ trait UPatchMakerDerivation extends UCommons {
     val tree = tpe match {
 
       case CaseClass(cc) =>
-        val u = new Univer(cc.name, tpe)
+        val u   = new Univer(cc.name, tpe)
         val ast = u.BundleTree(cc.fields.toList map { f => u.PatchFieldTree(f.name, f.tpe) })
         ast.tree
 

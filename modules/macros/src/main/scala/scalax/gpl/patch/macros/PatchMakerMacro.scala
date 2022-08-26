@@ -11,7 +11,7 @@ class PatchMakerMacro(val c: blackbox.Context) extends UPatchMakerDerivation {
     val tree = derivePatchMaker(t.tpe)
 
 //    if (c.settings.contains("print-patch-maker-code"))
-      info(showCode(tree))
+    info(showCode(tree))
 
     c.Expr[PatchMaker[T]](tree)
   }
