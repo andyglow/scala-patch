@@ -13,7 +13,7 @@ class ExportedPatchMakerMacro(val c: blackbox.Context) extends UPatchMakerDeriva
     val tree = derivePatchMaker(t.tpe)
     val x    = reify(Exported(c.Expr[PatchMaker[T]](tree).splice))
 
-//    if (c.settings.contains("print-patch-maker-code"))
+    if (c.settings.contains("print-patch-maker-code"))
       info(showCode(x.tree))
 
     x

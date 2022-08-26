@@ -3,6 +3,7 @@ package scalax.gpl.patch
 object ProductPatch {
 
     [#case class Patch1[CC <: Product, [#A0#]](
+      name: String,
       [#_0_name: String, _0_extract: CC => A0, _0_patch: Patch[A0]#,
       ],
       combine: ([#A0#]) => CC
@@ -28,6 +29,20 @@ object ProductPatch {
         }#
         ]
       }
+
+      override def toString(): String = {
+        s"ProductPatch[${name}]([#${_0_name}=${_0_patch}#])"
+      }
+
+      override def equals(that: Any): Boolean = that match {
+        case that: Patch1[CC, [#A0#]] =>
+            this.name == that.name &&
+            [#this._0_name == that._0_name# &&
+            ] &&
+            [#this._0_patch == that._0_patch# &&
+            ]
+        case _ => false
+      }
     }
 
     case class Maker1[CC <: Product, [#A0#]](
@@ -38,12 +53,19 @@ object ProductPatch {
     ) extends PatchMaker[CC] {
 
       override def make(l: CC, r: CC): Patch[CC] = Patch1(
+        name,
         [#_0_name, _0_extract, _0_patchMaker.make(_0_extract(l), _0_extract(r))#,
         ],
         combine
       )
 
       override def kind: PatchMaker.Kind = PatchMaker.Kind.Structure(name)
+
+
+      override def toString(): String = {
+        s"ProductPatch.Maker[${name}]([#${_0_name}=${_0_patchMaker}#])"
+      }
+
     }#
 ]
 
